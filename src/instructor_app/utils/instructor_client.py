@@ -38,11 +38,11 @@ class InstructorClient:
         """Initialize the instructor-patched client."""
         if self.provider == "openai":
             base_client = AsyncOpenAI(api_key=self.api_key)
-            return instructor.from_openai(base_client)
+            return instructor.from_openai(base_client, mode=instructor.Mode.MD_JSON)
         else:
             # Default to OpenAI
             base_client = AsyncOpenAI(api_key=self.api_key)
-            return instructor.from_openai(base_client)
+            return instructor.from_openai(base_client, mode=instructor.Mode.MD_JSON)
 
     async def create_completion(
         self,
