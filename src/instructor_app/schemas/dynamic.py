@@ -15,14 +15,14 @@ class SchemaField:
         description: str = "",
         required: bool = True,
         default: Any = None,
-        nested_schema: Optional[Dict[str, Any]] = None,
+        fields: Optional[List[Dict[str, Any]]] = None,
     ):
         self.name = name
         self.field_type = field_type
         self.description = description
         self.required = required
         self.default = default
-        self.nested_schema = nested_schema
+        self.fields = fields
 
     def to_pydantic_field(self, nested_models: Optional[Dict[str, Type[BaseModel]]] = None) -> tuple:
         """Convert to Pydantic field format."""
@@ -38,15 +38,16 @@ class SchemaField:
             "dict": Dict[str, Any],
         }
 
-        # Handle nested schema type
-        if self.field_type.lower() == "nested" and self.nested_schema:
-            # Get or create the nested model
-            if nested_models and self.nested_schema.get("name") in nested_models:
-                python_type = nested_models[self.nested_schema["name"]]
-            else:
-                # Create nested model on the fly
-                from instructor_app.schemas.dynamic import DynamicSchemaBuilder
-                python_type = DynamicSchemaBuilder.create_model_from_dict(self.nested_schema)
+        # Handle object type with nested fields
+        if self.field_type.lower() == "object" and self.fields:
+            # Create nested model from fields
+            nested_schema = {
+                "name": f"{self.name.capitalize()}Type",
+                "description": self.description,
+                "fields": self.fields
+            }
+            from instructor_app.schemas.dynamic import DynamicSchemaBuilder
+            python_type = DynamicSchemaBuilder.create_model_from_dict(nested_schema)
         else:
             python_type = type_mapping.get(self.field_type.lower(), str)
 
@@ -71,17 +72,10 @@ class DynamicSchemaBuilder:
     ) -> Type[BaseModel]:
         """Create a Pydantic model from a list of fields."""
         field_definitions = {}
-        nested_models = {}
         
-        # First pass: create all nested models
+        # Create field definitions (nested models are created inline)
         for field in fields:
-            if field.field_type.lower() == "nested" and field.nested_schema:
-                nested_model = DynamicSchemaBuilder.create_model_from_dict(field.nested_schema)
-                nested_models[field.nested_schema["name"]] = nested_model
-        
-        # Second pass: create field definitions
-        for field in fields:
-            field_definitions[field.name] = field.to_pydantic_field(nested_models)
+            field_definitions[field.name] = field.to_pydantic_field()
 
         model = create_model(model_name, **field_definitions)
         if model_description:
@@ -104,7 +98,7 @@ class DynamicSchemaBuilder:
                 description=field_data.get("description", ""),
                 required=field_data.get("required", True),
                 default=field_data.get("default"),
-                nested_schema=field_data.get("nested_schema"),
+                fields=field_data.get("fields"),
             )
             fields.append(field)
 
@@ -119,7 +113,7 @@ class DynamicSchemaBuilder:
 
         for field_name, field_info in model.model_fields.items():
             field_type = str(field_info.annotation)
-            nested_schema = None
+            nested_fields = None
             
             # Check if it's a nested BaseModel
             try:
@@ -134,13 +128,14 @@ class DynamicSchemaBuilder:
                 
                 if isinstance(actual_type, type) and issubclass(actual_type, BaseModel):
                     # It's a nested model - recursively convert it
-                    nested_schema = DynamicSchemaBuilder.model_to_dict(actual_type)
-                    field_type = "nested"
+                    nested_model_dict = DynamicSchemaBuilder.model_to_dict(actual_type)
+                    nested_fields = nested_model_dict["fields"]
+                    field_type = "object"
             except (TypeError, AttributeError):
                 pass
             
             # Simplify type representation for basic types
-            if field_type != "nested":
+            if field_type != "object":
                 if "str" in field_type:
                     field_type = "str"
                 elif "int" in field_type:
@@ -162,8 +157,8 @@ class DynamicSchemaBuilder:
                 "default": field_info.default if field_info.default is not None else None,
             }
             
-            if nested_schema:
-                field_dict["nested_schema"] = nested_schema
+            if nested_fields:
+                field_dict["fields"] = nested_fields
             
             fields.append(field_dict)
 

@@ -41,48 +41,36 @@ export default function SchemaStep({ schema, setSchema, onNext }: SchemaStepProp
 
   const addNestedField = (parentIndex: number) => {
     const field = schema.fields[parentIndex];
-    if (!field.nested_schema) {
-      field.nested_schema = {
-        name: `${field.name || 'Nested'}Schema`,
-        description: '',
-        fields: [],
-      };
+    if (!field.fields) {
+      field.fields = [];
     }
     
-    field.nested_schema.fields.push({
+    field.fields.push({
       name: '',
       type: 'str',
       description: '',
       required: true,
     });
     
-    updateField(parentIndex, { nested_schema: field.nested_schema });
+    updateField(parentIndex, { fields: field.fields });
   };
 
   const removeNestedField = (parentIndex: number, nestedIndex: number) => {
     const field = schema.fields[parentIndex];
-    if (field.nested_schema) {
-      field.nested_schema.fields = field.nested_schema.fields.filter((_, i) => i !== nestedIndex);
-      updateField(parentIndex, { nested_schema: field.nested_schema });
+    if (field.fields) {
+      field.fields = field.fields.filter((_, i) => i !== nestedIndex);
+      updateField(parentIndex, { fields: field.fields });
     }
   };
 
   const updateNestedField = (parentIndex: number, nestedIndex: number, updates: any) => {
     const field = schema.fields[parentIndex];
-    if (field.nested_schema) {
-      field.nested_schema.fields[nestedIndex] = {
-        ...field.nested_schema.fields[nestedIndex],
+    if (field.fields) {
+      field.fields[nestedIndex] = {
+        ...field.fields[nestedIndex],
         ...updates,
       };
-      updateField(parentIndex, { nested_schema: field.nested_schema });
-    }
-  };
-
-  const updateNestedSchemaInfo = (parentIndex: number, updates: { name?: string; description?: string }) => {
-    const field = schema.fields[parentIndex];
-    if (field.nested_schema) {
-      field.nested_schema = { ...field.nested_schema, ...updates };
-      updateField(parentIndex, { nested_schema: field.nested_schema });
+      updateField(parentIndex, { fields: field.fields });
     }
   };
 
@@ -218,14 +206,10 @@ export default function SchemaStep({ schema, setSchema, onNext }: SchemaStepProp
                   value={field.type}
                   onChange={(e) => {
                     const newType = e.target.value as any;
-                    if (newType === 'nested' && !field.nested_schema) {
+                    if (newType === 'object' && !field.fields) {
                       updateField(index, { 
                         type: newType,
-                        nested_schema: {
-                          name: `${field.name || 'Nested'}Schema`,
-                          description: '',
-                          fields: [],
-                        }
+                        fields: []
                       });
                     } else {
                       updateField(index, { type: newType });
@@ -238,7 +222,7 @@ export default function SchemaStep({ schema, setSchema, onNext }: SchemaStepProp
                   <option value="float">{t('types.float')}</option>
                   <option value="bool">{t('types.boolean')}</option>
                   <option value="list">{t('types.list')}</option>
-                  <option value="nested">{t('types.nested')}</option>
+                  <option value="object">{t('types.nested')}</option>
                 </select>
                 <input
                   type="text"
@@ -261,27 +245,10 @@ export default function SchemaStep({ schema, setSchema, onNext }: SchemaStepProp
               </div>
 
               {/* Nested Schema Section */}
-              {field.type === 'nested' && (
+              {field.type === 'object' && (
                 <div className="mt-2 p-2.5 bg-purple-50 border-2 border-dashed border-purple-300 rounded-lg">
-                  <div className="mb-2">
-                    <input
-                      type="text"
-                      value={field.nested_schema?.name || ''}
-                      onChange={(e) => updateNestedSchemaInfo(index, { name: e.target.value })}
-                      placeholder={t('nestedSchemaName')}
-                      className="w-full px-2 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent text-sm font-semibold mb-1.5"
-                    />
-                    <input
-                      type="text"
-                      value={field.nested_schema?.description || ''}
-                      onChange={(e) => updateNestedSchemaInfo(index, { description: e.target.value })}
-                      placeholder={t('nestedSchemaDescription')}
-                      className="w-full px-2 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent text-sm"
-                    />
-                  </div>
-
                   <div className="space-y-1.5 mb-2">
-                    {field.nested_schema?.fields.map((nestedField, nestedIndex) => (
+                    {field.fields?.map((nestedField, nestedIndex) => (
                       <div key={nestedIndex} className="bg-white p-2 rounded border border-gray-200">
                         <div className="flex justify-between items-center mb-1.5">
                           <span className="text-xs font-semibold text-gray-600">
