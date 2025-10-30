@@ -2,6 +2,8 @@
 
 Web application for [Instructor](https://github.com/567-labs/instructor) - structured outputs from LLMs with dynamic schemas.
 
+![Instructor App UI](https://github.com/user-attachments/assets/2225429b-5269-4c9a-a55d-ce6c51833e92)
+
 ## Features
 
 - 🎯 **Dynamic Schema Definition**: Create and validate Pydantic schemas on the fly
@@ -153,6 +155,10 @@ pytest
 ruff check --fix src/
 ruff format src/
 ```
+
+## Documentation
+
+For detailed usage instructions, examples, and API reference, see [USAGE.md](USAGE.md).
 
 ## Architecture
 
