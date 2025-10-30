@@ -50,6 +50,7 @@ export default function InstructorApp() {
   const [result, setResult] = useState<any>(null);
   const [extractList, setExtractList] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // Load from localStorage on mount
   useEffect(() => {
@@ -76,40 +77,46 @@ export default function InstructorApp() {
     } catch (error) {
       console.error('Error loading from localStorage:', error);
     }
+    // Mark as initialized after loading from localStorage
+    setIsInitialized(true);
   }, []);
 
-  // Save to localStorage whenever values change
+  // Save to localStorage whenever values change (but not on initial mount)
   useEffect(() => {
+    if (!isInitialized) return;
     try {
       localStorage.setItem(STORAGE_KEYS.SCHEMA, JSON.stringify(schema));
     } catch (error) {
       console.error('Error saving schema to localStorage:', error);
     }
-  }, [schema]);
+  }, [schema, isInitialized]);
 
   useEffect(() => {
+    if (!isInitialized) return;
     try {
       localStorage.setItem(STORAGE_KEYS.MODEL_CONFIG, JSON.stringify(modelConfig));
     } catch (error) {
       console.error('Error saving model config to localStorage:', error);
     }
-  }, [modelConfig]);
+  }, [modelConfig, isInitialized]);
 
   useEffect(() => {
+    if (!isInitialized) return;
     try {
       localStorage.setItem(STORAGE_KEYS.PROMPT, prompt);
     } catch (error) {
       console.error('Error saving prompt to localStorage:', error);
     }
-  }, [prompt]);
+  }, [prompt, isInitialized]);
 
   useEffect(() => {
+    if (!isInitialized) return;
     try {
       localStorage.setItem(STORAGE_KEYS.EXTRACT_LIST, JSON.stringify(extractList));
     } catch (error) {
       console.error('Error saving extract list to localStorage:', error);
     }
-  }, [extractList]);
+  }, [extractList, isInitialized]);
 
   const steps = [
     { number: 1, title: t('steps.schema.title'), description: t('steps.schema.description') },
