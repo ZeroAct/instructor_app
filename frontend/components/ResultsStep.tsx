@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { SchemaDefinition } from '@/types/schema';
 import { exportResult } from '@/lib/api';
 
@@ -17,6 +18,7 @@ export default function ResultsStep({
   onPrevious,
   onReset,
 }: ResultsStepProps) {
+  const t = useTranslations('resultsStep');
   const [viewMode, setViewMode] = useState<'formatted' | 'raw'>('formatted');
   const [exportMessage, setExportMessage] = useState<string | null>(null);
 
@@ -90,7 +92,7 @@ export default function ResultsStep({
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h2 className="text-xl font-bold text-gray-900">📊 Results</h2>
+        <h2 className="text-xl font-bold text-gray-900">📊 {t('title')}</h2>
         <div className="flex gap-2">
           <button
             onClick={() => setViewMode('formatted')}
@@ -100,7 +102,7 @@ export default function ResultsStep({
                 : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
             }`}
           >
-            Formatted
+            {t('formatted')}
           </button>
           <button
             onClick={() => setViewMode('raw')}
@@ -110,7 +112,7 @@ export default function ResultsStep({
                 : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
             }`}
           >
-            Raw JSON
+            {t('rawJson')}
           </button>
         </div>
       </div>
@@ -151,13 +153,13 @@ export default function ResultsStep({
           onClick={() => handleExport('json')}
           className="px-3 py-1.5 text-sm bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition"
         >
-          📥 Export JSON
+          📥 {t('export')} JSON
         </button>
         <button
           onClick={() => handleExport('markdown')}
           className="px-3 py-1.5 text-sm bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition"
         >
-          📝 Export Markdown
+          📝 {t('export')} Markdown
         </button>
       </div>
 
@@ -166,13 +168,13 @@ export default function ResultsStep({
           onClick={onPrevious}
           className="px-4 py-2 text-sm bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition"
         >
-          ← Previous: Prompt
+          ← {t('previous')}
         </button>
         <button
           onClick={onReset}
           className="px-4 py-2 text-sm bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
         >
-          🔄 Start New Extraction
+          🔄 {t('startOver')}
         </button>
       </div>
     </div>
