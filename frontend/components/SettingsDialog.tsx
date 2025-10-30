@@ -177,7 +177,7 @@ export default function SettingsDialog({
                   onChange={(e) => setLocalConfig({ ...localConfig, baseUrl: e.target.value || undefined })}
                   placeholder={
                     localConfig.provider === 'ollama' 
-                      ? 'e.g., http://localhost:11434/v1' 
+                      ? 'e.g., http://localhost:11434' 
                       : localConfig.provider === 'litellm'
                       ? 'e.g., http://localhost:4000'
                       : 'Leave empty for default'
@@ -186,7 +186,7 @@ export default function SettingsDialog({
                 />
                 <p className="mt-1 text-sm text-gray-500">
                   {localConfig.provider === 'ollama' 
-                    ? 'Default: http://localhost:11434/v1' 
+                    ? 'Default: http://localhost:11434 (will automatically append /v1)' 
                     : localConfig.provider === 'litellm'
                     ? 'Default: http://localhost:4000'
                     : 'Uses default OpenAI endpoint if not provided'
@@ -229,17 +229,12 @@ export default function SettingsDialog({
                   type="password"
                   value={localConfig.apiKey || ''}
                   onChange={(e) => setLocalConfig({ ...localConfig, apiKey: e.target.value || undefined })}
-                  placeholder={
-                    localConfig.provider === 'ollama'
-                      ? 'Not required for Ollama'
-                      : 'Leave empty to use environment variable'
-                  }
+                  placeholder="Leave empty to use environment variable"
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
-                  disabled={localConfig.provider === 'ollama'}
                 />
                 <p className="mt-1 text-sm text-gray-500">
                   {localConfig.provider === 'ollama'
-                    ? 'Ollama does not require an API key'
+                    ? 'Optional for Ollama (if authentication is configured)'
                     : localConfig.provider === 'litellm'
                     ? 'Uses LITELLM_API_KEY from environment if not provided'
                     : 'Uses OPENAI_API_KEY from environment if not provided'
