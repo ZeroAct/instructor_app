@@ -241,6 +241,46 @@
         .help-text-spaced {
             margin-bottom: 10px;
         }
+        
+        .nested-schema-container {
+            background: #f0f0f0;
+            border: 2px dashed #667eea;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 8px;
+            display: none;
+        }
+        
+        .nested-schema-container.active {
+            display: block;
+        }
+        
+        .nested-field-item {
+            background: white;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 6px;
+            border: 1px solid #d0d0d0;
+        }
+        
+        .nested-field-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+            font-size: 13px;
+        }
+        
+        .nested-field-item input, .nested-field-item select {
+            margin-bottom: 4px;
+            font-size: 13px;
+            padding: 8px;
+        }
+        
+        .btn-nested {
+            font-size: 12px;
+            padding: 4px 8px;
+        }
     </style>
 </head>
 <body>
@@ -279,15 +319,26 @@
                                 <button class="btn-small btn-danger" onclick="removeField(0)">Remove</button>
                             </div>
                             <input type="text" placeholder="Field name" class="field-name" value="name">
-                            <select class="field-type">
+                            <select class="field-type" onchange="toggleNestedSchema(0)">
                                 <option value="str" selected>String</option>
                                 <option value="int">Integer</option>
                                 <option value="float">Float</option>
                                 <option value="bool">Boolean</option>
                                 <option value="list">List</option>
+                                <option value="nested">Nested Schema</option>
                             </select>
                             <input type="text" placeholder="Description" class="field-description" value="User's full name">
                             <label><input type="checkbox" class="field-required" checked> Required</label>
+                            
+                            <!-- Nested schema container -->
+                            <div class="nested-schema-container" data-parent-index="0">
+                                <div style="margin-bottom: 8px;">
+                                    <input type="text" placeholder="Nested schema name" class="nested-schema-name" style="font-weight: 600;">
+                                    <input type="text" placeholder="Nested schema description" class="nested-schema-description">
+                                </div>
+                                <div class="nested-fields-container"></div>
+                                <button type="button" class="btn-small btn-nested" onclick="addNestedField(0)">+ Add Nested Field</button>
+                            </div>
                         </div>
                     </div>
                     <button class="btn-small" onclick="addField()">+ Add Field</button>
@@ -350,6 +401,58 @@
     <script>
         let fieldCounter = 1;
         let currentResult = null;
+        let nestedFieldCounters = {};
+        
+        function toggleNestedSchema(fieldIndex) {
+            const field = document.querySelector(`[data-index="${fieldIndex}"]`);
+            const fieldType = field.querySelector('.field-type').value;
+            const nestedContainer = field.querySelector('.nested-schema-container');
+            
+            if (fieldType === 'nested') {
+                nestedContainer.classList.add('active');
+            } else {
+                nestedContainer.classList.remove('active');
+            }
+        }
+        
+        function addNestedField(parentIndex) {
+            const field = document.querySelector(`[data-index="${parentIndex}"]`);
+            const nestedContainer = field.querySelector('.nested-fields-container');
+            
+            if (!nestedFieldCounters[parentIndex]) {
+                nestedFieldCounters[parentIndex] = 0;
+            }
+            
+            const nestedIndex = nestedFieldCounters[parentIndex]++;
+            const nestedFieldItem = document.createElement('div');
+            nestedFieldItem.className = 'nested-field-item';
+            nestedFieldItem.dataset.nestedIndex = nestedIndex;
+            nestedFieldItem.innerHTML = `
+                <div class="nested-field-header">
+                    <strong>Nested Field ${nestedIndex + 1}</strong>
+                    <button type="button" class="btn-small btn-danger" onclick="removeNestedField(${parentIndex}, ${nestedIndex})">Remove</button>
+                </div>
+                <input type="text" placeholder="Field name" class="nested-field-name">
+                <select class="nested-field-type">
+                    <option value="str">String</option>
+                    <option value="int">Integer</option>
+                    <option value="float">Float</option>
+                    <option value="bool">Boolean</option>
+                    <option value="list">List</option>
+                </select>
+                <input type="text" placeholder="Description" class="nested-field-description">
+                <label style="font-size: 13px;"><input type="checkbox" class="nested-field-required" checked> Required</label>
+            `;
+            nestedContainer.appendChild(nestedFieldItem);
+        }
+        
+        function removeNestedField(parentIndex, nestedIndex) {
+            const field = document.querySelector(`[data-index="${parentIndex}"]`);
+            const nestedField = field.querySelector(`[data-nested-index="${nestedIndex}"]`);
+            if (nestedField) {
+                nestedField.remove();
+            }
+        }
         
         function addField() {
             const container = document.getElementById('fieldsContainer');
@@ -362,15 +465,26 @@
                     <button class="btn-small btn-danger" onclick="removeField(${fieldCounter})">Remove</button>
                 </div>
                 <input type="text" placeholder="Field name" class="field-name">
-                <select class="field-type">
+                <select class="field-type" onchange="toggleNestedSchema(${fieldCounter})">
                     <option value="str">String</option>
                     <option value="int">Integer</option>
                     <option value="float">Float</option>
                     <option value="bool">Boolean</option>
                     <option value="list">List</option>
+                    <option value="nested">Nested Schema</option>
                 </select>
                 <input type="text" placeholder="Description" class="field-description">
                 <label><input type="checkbox" class="field-required" checked> Required</label>
+                
+                <!-- Nested schema container -->
+                <div class="nested-schema-container" data-parent-index="${fieldCounter}">
+                    <div style="margin-bottom: 8px;">
+                        <input type="text" placeholder="Nested schema name" class="nested-schema-name" style="font-weight: 600;">
+                        <input type="text" placeholder="Nested schema description" class="nested-schema-description">
+                    </div>
+                    <div class="nested-fields-container"></div>
+                    <button type="button" class="btn-small btn-nested" onclick="addNestedField(${fieldCounter})">+ Add Nested Field</button>
+                </div>
             `;
             container.appendChild(fieldItem);
             fieldCounter++;
@@ -395,12 +509,44 @@
                 const fieldRequired = item.querySelector('.field-required').checked;
                 
                 if (fieldName) {
-                    fields.push({
+                    const fieldObj = {
                         name: fieldName,
                         type: fieldType,
                         description: fieldDescription,
                         required: fieldRequired
-                    });
+                    };
+                    
+                    // Handle nested schema
+                    if (fieldType === 'nested') {
+                        const nestedContainer = item.querySelector('.nested-schema-container');
+                        const nestedSchemaName = nestedContainer.querySelector('.nested-schema-name').value || `${fieldName}Schema`;
+                        const nestedSchemaDescription = nestedContainer.querySelector('.nested-schema-description').value || '';
+                        const nestedFields = [];
+                        
+                        nestedContainer.querySelectorAll('.nested-field-item').forEach(nestedItem => {
+                            const nestedFieldName = nestedItem.querySelector('.nested-field-name').value;
+                            const nestedFieldType = nestedItem.querySelector('.nested-field-type').value;
+                            const nestedFieldDescription = nestedItem.querySelector('.nested-field-description').value;
+                            const nestedFieldRequired = nestedItem.querySelector('.nested-field-required').checked;
+                            
+                            if (nestedFieldName) {
+                                nestedFields.push({
+                                    name: nestedFieldName,
+                                    type: nestedFieldType,
+                                    description: nestedFieldDescription,
+                                    required: nestedFieldRequired
+                                });
+                            }
+                        });
+                        
+                        fieldObj.nested_schema = {
+                            name: nestedSchemaName,
+                            description: nestedSchemaDescription,
+                            fields: nestedFields
+                        };
+                    }
+                    
+                    fields.push(fieldObj);
                 }
             });
             
