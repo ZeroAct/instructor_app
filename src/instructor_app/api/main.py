@@ -33,6 +33,7 @@ class CompletionRequest(BaseModel):
     max_tokens: int = 1000
     temperature: float = 0.7
     stream: bool = False
+    extract_list: bool = False  # Extract a list of objects instead of a single object
 
 
 class ExportRequest(BaseModel):
@@ -98,7 +99,14 @@ async def create_completion(request: CompletionRequest):
     try:
         # Build dynamic schema
         schema_dict = request.schema_def.model_dump()
-        response_model = DynamicSchemaBuilder.create_model_from_dict(schema_dict)
+        base_model = DynamicSchemaBuilder.create_model_from_dict(schema_dict)
+        
+        # Wrap in List if extract_list is enabled
+        if request.extract_list:
+            from typing import List as ListType
+            response_model = ListType[base_model]
+        else:
+            response_model = base_model
 
         # Initialize client
         client = InstructorClient(
@@ -117,7 +125,12 @@ async def create_completion(request: CompletionRequest):
                     temperature=request.temperature,
                 ):
                     # Send partial results as JSON
-                    yield f"data: {partial.model_dump_json()}\n\n"
+                    if request.extract_list:
+                        # For lists, serialize as list
+                        import json
+                        yield f"data: {json.dumps([item.model_dump() for item in partial])}\n\n"
+                    else:
+                        yield f"data: {partial.model_dump_json()}\n\n"
 
             return StreamingResponse(generate(), media_type="text/event-stream")
         else:
@@ -128,7 +141,12 @@ async def create_completion(request: CompletionRequest):
                 max_tokens=request.max_tokens,
                 temperature=request.temperature,
             )
-            return {"result": result.model_dump()}
+            
+            if request.extract_list:
+                # For lists, convert to list of dicts
+                return {"result": [item.model_dump() for item in result]}
+            else:
+                return {"result": result.model_dump()}
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Completion error: {str(e)}")

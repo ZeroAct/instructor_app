@@ -15,7 +15,7 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            padding: 20px;
+            padding: 15px;
         }
         
         .container {
@@ -30,53 +30,54 @@
         header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 30px;
+            padding: 15px 20px;
             text-align: center;
         }
         
         header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
+            font-size: 1.8em;
+            margin-bottom: 5px;
         }
         
         header p {
-            font-size: 1.1em;
+            font-size: 0.95em;
             opacity: 0.9;
         }
         
         .content {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            padding: 30px;
+            gap: 15px;
+            padding: 20px;
         }
         
         .section {
             background: #f8f9fa;
             border-radius: 12px;
-            padding: 25px;
+            padding: 20px;
         }
         
         .section h2 {
             color: #667eea;
-            margin-bottom: 20px;
-            font-size: 1.5em;
+            margin-bottom: 15px;
+            font-size: 1.3em;
         }
         
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
         
         label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             font-weight: 600;
             color: #333;
+            font-size: 14px;
         }
         
         input, textarea, select {
             width: 100%;
-            padding: 12px;
+            padding: 10px;
             border: 2px solid #e0e0e0;
             border-radius: 8px;
             font-size: 14px;
@@ -90,7 +91,7 @@
         
         textarea {
             resize: vertical;
-            min-height: 100px;
+            min-height: 70px;
         }
         
         button {
@@ -120,14 +121,14 @@
         }
         
         .field-builder {
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
         
         .field-item {
             background: white;
-            padding: 15px;
+            padding: 12px;
             border-radius: 8px;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             border: 1px solid #e0e0e0;
         }
         
@@ -135,11 +136,11 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
         
         .field-item input, .field-item select {
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
         
         .btn-small {
@@ -154,9 +155,9 @@
         .result-container {
             background: white;
             border-radius: 8px;
-            padding: 20px;
-            min-height: 200px;
-            max-height: 500px;
+            padding: 15px;
+            min-height: 150px;
+            max-height: 400px;
             overflow-y: auto;
         }
         
@@ -211,6 +212,109 @@
             color: #3c3;
             border: 1px solid #cfc;
         }
+        
+        .help-text {
+            font-size: 12px;
+            color: #666;
+            margin-top: 4px;
+            font-style: italic;
+        }
+        
+        .workflow-steps {
+            background: #e8f4ff;
+            border-left: 4px solid #667eea;
+            padding: 12px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        
+        .workflow-steps strong {
+            color: #667eea;
+        }
+        
+        .fields-container-spacing {
+            margin-top: 8px;
+        }
+        
+        .help-text-spaced {
+            margin-bottom: 10px;
+        }
+        
+        .nested-schema-container {
+            background: #f0f0f0;
+            border: 2px dashed #667eea;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 8px;
+            display: none;
+        }
+        
+        .nested-schema-container.active {
+            display: block;
+        }
+        
+        .nested-field-item {
+            background: white;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 6px;
+            border: 1px solid #d0d0d0;
+        }
+        
+        .nested-field-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+            font-size: 13px;
+        }
+        
+        .nested-field-item input, .nested-field-item select {
+            margin-bottom: 4px;
+            font-size: 13px;
+            padding: 8px;
+        }
+        
+        .btn-nested {
+            font-size: 12px;
+            padding: 4px 8px;
+        }
+
+        /* Inline/toggle checkbox layout */
+        .checkbox-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 14px;
+        }
+        .checkbox-row label {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin: 0; /* override label block spacing */
+            font-weight: 500;
+        }
+        .checkbox-row input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+        }
+
+        /* Reusable inline checkbox for other sections */
+        .inline-checkbox {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin: 6px 0 0 0;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        .inline-checkbox input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+        }
+        .nested-field-item .inline-checkbox { font-size: 13px; }
     </style>
 </head>
 <body>
@@ -224,9 +328,14 @@
             <div class="section">
                 <h2>📋 Schema Definition</h2>
                 
+                <div class="workflow-steps">
+                    <strong>Quick Start:</strong> 1. Define your schema fields below → 2. Configure settings → 3. Run completion to extract structured data
+                </div>
+                
                 <div class="form-group">
                     <label>Schema Name</label>
                     <input type="text" id="schemaName" placeholder="e.g., UserProfile" value="UserProfile">
+                    <div class="help-text">Name of the data structure you want to extract</div>
                 </div>
                 
                 <div class="form-group">
@@ -236,22 +345,34 @@
                 
                 <div class="field-builder">
                     <label>Fields</label>
-                    <div id="fieldsContainer">
+                    <div class="help-text">Add the data fields you want to extract from your text</div>
+                    <div id="fieldsContainer" class="fields-container-spacing">
                         <div class="field-item" data-index="0">
                             <div class="field-item-header">
                                 <strong>Field 1</strong>
                                 <button class="btn-small btn-danger" onclick="removeField(0)">Remove</button>
                             </div>
                             <input type="text" placeholder="Field name" class="field-name" value="name">
-                            <select class="field-type">
+                            <select class="field-type" onchange="toggleNestedSchema(0)">
                                 <option value="str" selected>String</option>
                                 <option value="int">Integer</option>
                                 <option value="float">Float</option>
                                 <option value="bool">Boolean</option>
                                 <option value="list">List</option>
+                                <option value="nested">Nested Schema</option>
                             </select>
                             <input type="text" placeholder="Description" class="field-description" value="User's full name">
-                            <label><input type="checkbox" class="field-required" checked> Required</label>
+                            <label class="inline-checkbox"><input type="checkbox" class="field-required" checked> Required</label>
+                            
+                            <!-- Nested schema container -->
+                            <div class="nested-schema-container" data-parent-index="0">
+                                <div style="margin-bottom: 8px;">
+                                    <input type="text" placeholder="Nested schema name" class="nested-schema-name" style="font-weight: 600;">
+                                    <input type="text" placeholder="Nested schema description" class="nested-schema-description">
+                                </div>
+                                <div class="nested-fields-container"></div>
+                                <button type="button" class="btn-small btn-nested" onclick="addNestedField(0)">+ Add Nested Field</button>
+                            </div>
                         </div>
                     </div>
                     <button class="btn-small" onclick="addField()">+ Add Field</button>
@@ -259,7 +380,7 @@
                 
                 <button onclick="validateSchema()">Validate Schema</button>
                 
-                <div class="form-group" style="margin-top: 30px;">
+                <div class="form-group" style="margin-top: 20px;">
                     <h2>⚙️ Settings</h2>
                     
                     <div class="form-group">
@@ -283,10 +404,16 @@
                     <div class="form-group">
                         <label>Prompt</label>
                         <textarea id="prompt" placeholder="Enter your prompt...">Extract user profile information from the following text: John Doe is a 30 year old software engineer living in San Francisco.</textarea>
+                        <div class="help-text">Provide text containing the data you want to extract</div>
                     </div>
                     
                     <div class="form-group">
-                        <label><input type="checkbox" id="streamMode"> Enable Streaming</label>
+                        <label>Options</label>
+                        <div class="checkbox-row">
+                            <label for="streamMode"><input type="checkbox" id="streamMode"> Enable Streaming</label>
+                            <label for="extractList"><input type="checkbox" id="extractList"> Extract as List</label>
+                        </div>
+                        <div class="help-text">Extract multiple instances instead of a single object</div>
                     </div>
                     
                     <button onclick="runCompletion()">▶️ Run Completion</button>
@@ -295,9 +422,10 @@
             
             <div class="section">
                 <h2>📊 Results</h2>
+                <div class="help-text help-text-spaced">Structured data extracted from your prompt will appear here</div>
                 <div id="alertContainer"></div>
                 <div class="result-container" id="resultContainer">
-                    <p style="color: #999; text-align: center; padding: 60px 20px;">
+                    <p style="color: #999; text-align: center; padding: 40px 20px;">
                         Results will appear here after running a completion
                     </p>
                 </div>
@@ -312,6 +440,58 @@
     <script>
         let fieldCounter = 1;
         let currentResult = null;
+        let nestedFieldCounters = {};
+        
+        function toggleNestedSchema(fieldIndex) {
+            const field = document.querySelector(`[data-index="${fieldIndex}"]`);
+            const fieldType = field.querySelector('.field-type').value;
+            const nestedContainer = field.querySelector('.nested-schema-container');
+            
+            if (fieldType === 'nested') {
+                nestedContainer.classList.add('active');
+            } else {
+                nestedContainer.classList.remove('active');
+            }
+        }
+        
+        function addNestedField(parentIndex) {
+            const field = document.querySelector(`[data-index="${parentIndex}"]`);
+            const nestedContainer = field.querySelector('.nested-fields-container');
+            
+            if (!nestedFieldCounters[parentIndex]) {
+                nestedFieldCounters[parentIndex] = 0;
+            }
+            
+            const nestedIndex = nestedFieldCounters[parentIndex]++;
+            const nestedFieldItem = document.createElement('div');
+            nestedFieldItem.className = 'nested-field-item';
+            nestedFieldItem.dataset.nestedIndex = nestedIndex;
+            nestedFieldItem.innerHTML = `
+                <div class="nested-field-header">
+                    <strong>Nested Field ${nestedIndex + 1}</strong>
+                    <button type="button" class="btn-small btn-danger" onclick="removeNestedField(${parentIndex}, ${nestedIndex})">Remove</button>
+                </div>
+                <input type="text" placeholder="Field name" class="nested-field-name">
+                <select class="nested-field-type">
+                    <option value="str">String</option>
+                    <option value="int">Integer</option>
+                    <option value="float">Float</option>
+                    <option value="bool">Boolean</option>
+                    <option value="list">List</option>
+                </select>
+                <input type="text" placeholder="Description" class="nested-field-description">
+                <label class="inline-checkbox"><input type="checkbox" class="nested-field-required" checked> Required</label>
+            `;
+            nestedContainer.appendChild(nestedFieldItem);
+        }
+        
+        function removeNestedField(parentIndex, nestedIndex) {
+            const field = document.querySelector(`[data-index="${parentIndex}"]`);
+            const nestedField = field.querySelector(`[data-nested-index="${nestedIndex}"]`);
+            if (nestedField) {
+                nestedField.remove();
+            }
+        }
         
         function addField() {
             const container = document.getElementById('fieldsContainer');
@@ -324,15 +504,26 @@
                     <button class="btn-small btn-danger" onclick="removeField(${fieldCounter})">Remove</button>
                 </div>
                 <input type="text" placeholder="Field name" class="field-name">
-                <select class="field-type">
+                <select class="field-type" onchange="toggleNestedSchema(${fieldCounter})">
                     <option value="str">String</option>
                     <option value="int">Integer</option>
                     <option value="float">Float</option>
                     <option value="bool">Boolean</option>
                     <option value="list">List</option>
+                    <option value="nested">Nested Schema</option>
                 </select>
                 <input type="text" placeholder="Description" class="field-description">
-                <label><input type="checkbox" class="field-required" checked> Required</label>
+                <label class="inline-checkbox"><input type="checkbox" class="field-required" checked> Required</label>
+                
+                <!-- Nested schema container -->
+                <div class="nested-schema-container" data-parent-index="${fieldCounter}">
+                    <div style="margin-bottom: 8px;">
+                        <input type="text" placeholder="Nested schema name" class="nested-schema-name" style="font-weight: 600;">
+                        <input type="text" placeholder="Nested schema description" class="nested-schema-description">
+                    </div>
+                    <div class="nested-fields-container"></div>
+                    <button type="button" class="btn-small btn-nested" onclick="addNestedField(${fieldCounter})">+ Add Nested Field</button>
+                </div>
             `;
             container.appendChild(fieldItem);
             fieldCounter++;
@@ -357,12 +548,44 @@
                 const fieldRequired = item.querySelector('.field-required').checked;
                 
                 if (fieldName) {
-                    fields.push({
+                    const fieldObj = {
                         name: fieldName,
                         type: fieldType,
                         description: fieldDescription,
                         required: fieldRequired
-                    });
+                    };
+                    
+                    // Handle nested schema
+                    if (fieldType === 'nested') {
+                        const nestedContainer = item.querySelector('.nested-schema-container');
+                        const nestedSchemaName = nestedContainer.querySelector('.nested-schema-name').value || `${fieldName}Schema`;
+                        const nestedSchemaDescription = nestedContainer.querySelector('.nested-schema-description').value || '';
+                        const nestedFields = [];
+                        
+                        nestedContainer.querySelectorAll('.nested-field-item').forEach(nestedItem => {
+                            const nestedFieldName = nestedItem.querySelector('.nested-field-name').value;
+                            const nestedFieldType = nestedItem.querySelector('.nested-field-type').value;
+                            const nestedFieldDescription = nestedItem.querySelector('.nested-field-description').value;
+                            const nestedFieldRequired = nestedItem.querySelector('.nested-field-required').checked;
+                            
+                            if (nestedFieldName) {
+                                nestedFields.push({
+                                    name: nestedFieldName,
+                                    type: nestedFieldType,
+                                    description: nestedFieldDescription,
+                                    required: nestedFieldRequired
+                                });
+                            }
+                        });
+                        
+                        fieldObj.nested_schema = {
+                            name: nestedSchemaName,
+                            description: nestedSchemaDescription,
+                            fields: nestedFields
+                        };
+                    }
+                    
+                    fields.push(fieldObj);
                 }
             });
             
@@ -413,6 +636,7 @@
                 const apiKey = document.getElementById('apiKey').value || null;
                 const model = document.getElementById('model').value || null;
                 const streamMode = document.getElementById('streamMode').checked;
+                const extractList = document.getElementById('extractList').checked;
                 
                 const requestBody = {
                     schema_def: schema,
@@ -420,7 +644,8 @@
                     provider,
                     api_key: apiKey,
                     model,
-                    stream: streamMode
+                    stream: streamMode,
+                    extract_list: extractList
                 };
                 
                 document.getElementById('resultContainer').innerHTML = 
