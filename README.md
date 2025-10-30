@@ -13,6 +13,7 @@ Web application for [Instructor](https://github.com/567-labs/instructor) - struc
 - 🤖 **MCP Support**: Model Context Protocol server for tool integration
 - 🐳 **Docker Support**: Easy deployment with Docker and docker-compose
 - 📦 **UV Environment**: Modern Python package management with UV
+- ⚡ **Modern Frontend**: Next.js frontend with improved UX and step-by-step workflow
 
 ## Quick Start
 
@@ -51,7 +52,29 @@ ANTHROPIC_API_KEY=your_anthropic_api_key
 
 ## Usage
 
-### Web Interface
+### Modern Frontend (Recommended)
+
+The new Next.js frontend provides an improved UX with step-by-step workflow:
+
+1. **Start the backend**: Run `python main.py` (backend runs on port 8000)
+2. **Start the frontend**: 
+   ```bash
+   cd frontend
+   npm install
+   npm run dev
+   ```
+3. **Open browser**: Navigate to `http://localhost:3000`
+4. **Follow the steps**:
+   - Step 1: Define your schema (with import/export)
+   - Step 2: Configure the model settings
+   - Step 3: Enter your prompt
+   - Step 4: View results (formatted or raw JSON)
+
+See [frontend/README.md](frontend/README.md) for more details.
+
+### Legacy Web Interface
+
+The original single-page interface is still available at `http://localhost:8000`:
 
 1. Open your browser to `http://localhost:8000`
 2. Define your schema by adding fields
