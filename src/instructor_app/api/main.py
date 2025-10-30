@@ -30,16 +30,17 @@ class CompletionRequest(BaseModel):
     provider: str = "openai"
     model: str | None = None
     api_key: str | None = None
-    max_tokens: int = 1000
-    temperature: float = 0.7
     stream: bool = False
     extract_list: bool = False  # Extract a list of objects instead of a single object
+    
+    class Config:
+        extra = "allow"  # Allow extra fields for dynamic parameters
 
 
 class ExportRequest(BaseModel):
     """Request model for export."""
 
-    data: Dict[str, Any]
+    data: Dict[str, Any] | list[Any]
     format: str = "json"  # json or markdown
     title: str = "Result"
 
@@ -113,7 +114,12 @@ async def create_completion(request: CompletionRequest):
             provider=request.provider,
             api_key=request.api_key,
             model=request.model,
+            base_url=getattr(request, 'base_url', None),
         )
+        
+        # Extract dynamic parameters (exclude the fields we handle separately)
+        excluded_fields = {'schema_def', 'messages', 'provider', 'model', 'api_key', 'stream', 'extract_list', 'base_url'}
+        dynamic_params = {k: v for k, v in request.model_dump().items() if k not in excluded_fields}
 
         if request.stream:
             # Return streaming response
@@ -121,8 +127,7 @@ async def create_completion(request: CompletionRequest):
                 async for partial in client.create_streaming_completion(
                     response_model=response_model,
                     messages=request.messages,
-                    max_tokens=request.max_tokens,
-                    temperature=request.temperature,
+                    **dynamic_params,
                 ):
                     # Send partial results as JSON
                     if request.extract_list:
@@ -138,8 +143,7 @@ async def create_completion(request: CompletionRequest):
             result = await client.create_completion(
                 response_model=response_model,
                 messages=request.messages,
-                max_tokens=request.max_tokens,
-                temperature=request.temperature,
+                **dynamic_params,
             )
             
             if request.extract_list:
@@ -150,6 +154,60 @@ async def create_completion(request: CompletionRequest):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Completion error: {str(e)}")
+
+
+@app.post("/api/model/validate")
+async def validate_model(request: CompletionRequest):
+    """Validate model configuration by sending a test request."""
+    try:
+        # Build a simple test schema
+        test_schema = {
+            "name": "TestValidation",
+            "description": "Test schema for model validation",
+            "fields": [
+                {"name": "status", "type": "str", "description": "Validation status", "required": True}
+            ]
+        }
+        
+        schema_dict = test_schema
+        test_model = DynamicSchemaBuilder.create_model_from_dict(schema_dict)
+        
+        # Initialize client
+        client = InstructorClient(
+            provider=request.provider,
+            api_key=request.api_key,
+            model=request.model,
+            base_url=getattr(request, 'base_url', None),
+        )
+        
+        # Extract dynamic parameters
+        excluded_fields = {'schema_def', 'messages', 'provider', 'model', 'api_key', 'stream', 'extract_list', 'base_url'}
+        dynamic_params = {k: v for k, v in request.model_dump().items() if k not in excluded_fields}
+        
+        # Test with a simple message
+        test_messages = [{"role": "user", "content": "Return status as 'success'"}]
+        
+        # Try to create completion
+        result = await client.create_completion(
+            response_model=test_model,
+            messages=test_messages,
+            **dynamic_params,
+        )
+        
+        return {
+            "valid": True,
+            "message": "Model configuration validated successfully",
+            "provider": request.provider,
+            "model": request.model or f"default ({client.model})",
+        }
+    
+    except Exception as e:
+        return {
+            "valid": False,
+            "message": f"Model validation failed: {str(e)}",
+            "provider": request.provider,
+            "model": request.model or "default",
+        }
 
 
 @app.post("/api/export")
