@@ -181,7 +181,9 @@ ruff format src/
 
 ## Documentation
 
-For detailed usage instructions, examples, and API reference, see [USAGE.md](USAGE.md).
+- [USAGE.md](USAGE.md) - Detailed usage instructions, examples, and API reference
+- [FRONTEND_GUIDE.md](FRONTEND_GUIDE.md) - Frontend migration guide and architecture
+- [frontend/README.md](frontend/README.md) - Frontend-specific documentation
 
 ## Architecture
 
