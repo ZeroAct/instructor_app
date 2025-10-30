@@ -37,6 +37,53 @@ export default function SchemaStep({ schema, setSchema, onNext }: SchemaStepProp
     setSchema({ ...schema, fields: newFields });
   };
 
+  const addNestedField = (parentIndex: number) => {
+    const field = schema.fields[parentIndex];
+    if (!field.nested_schema) {
+      field.nested_schema = {
+        name: `${field.name || 'Nested'}Schema`,
+        description: '',
+        fields: [],
+      };
+    }
+    
+    field.nested_schema.fields.push({
+      name: '',
+      type: 'str',
+      description: '',
+      required: true,
+    });
+    
+    updateField(parentIndex, { nested_schema: field.nested_schema });
+  };
+
+  const removeNestedField = (parentIndex: number, nestedIndex: number) => {
+    const field = schema.fields[parentIndex];
+    if (field.nested_schema) {
+      field.nested_schema.fields = field.nested_schema.fields.filter((_, i) => i !== nestedIndex);
+      updateField(parentIndex, { nested_schema: field.nested_schema });
+    }
+  };
+
+  const updateNestedField = (parentIndex: number, nestedIndex: number, updates: any) => {
+    const field = schema.fields[parentIndex];
+    if (field.nested_schema) {
+      field.nested_schema.fields[nestedIndex] = {
+        ...field.nested_schema.fields[nestedIndex],
+        ...updates,
+      };
+      updateField(parentIndex, { nested_schema: field.nested_schema });
+    }
+  };
+
+  const updateNestedSchemaInfo = (parentIndex: number, updates: { name?: string; description?: string }) => {
+    const field = schema.fields[parentIndex];
+    if (field.nested_schema) {
+      field.nested_schema = { ...field.nested_schema, ...updates };
+      updateField(parentIndex, { nested_schema: field.nested_schema });
+    }
+  };
+
   const handleValidate = async () => {
     setIsValidating(true);
     setValidationMessage(null);
@@ -167,7 +214,21 @@ export default function SchemaStep({ schema, setSchema, onNext }: SchemaStepProp
                 />
                 <select
                   value={field.type}
-                  onChange={(e) => updateField(index, { type: e.target.value as any })}
+                  onChange={(e) => {
+                    const newType = e.target.value as any;
+                    if (newType === 'nested' && !field.nested_schema) {
+                      updateField(index, { 
+                        type: newType,
+                        nested_schema: {
+                          name: `${field.name || 'Nested'}Schema`,
+                          description: '',
+                          fields: [],
+                        }
+                      });
+                    } else {
+                      updateField(index, { type: newType });
+                    }
+                  }}
                   className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent text-sm"
                 >
                   <option value="str">String</option>
@@ -196,6 +257,91 @@ export default function SchemaStep({ schema, setSchema, onNext }: SchemaStepProp
                   <span className="text-sm text-gray-700">Required</span>
                 </label>
               </div>
+
+              {/* Nested Schema Section */}
+              {field.type === 'nested' && (
+                <div className="mt-3 p-3 bg-purple-50 border-2 border-dashed border-purple-300 rounded-lg">
+                  <div className="mb-3">
+                    <input
+                      type="text"
+                      value={field.nested_schema?.name || ''}
+                      onChange={(e) => updateNestedSchemaInfo(index, { name: e.target.value })}
+                      placeholder="Nested schema name"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent text-sm font-semibold mb-2"
+                    />
+                    <input
+                      type="text"
+                      value={field.nested_schema?.description || ''}
+                      onChange={(e) => updateNestedSchemaInfo(index, { description: e.target.value })}
+                      placeholder="Nested schema description"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent text-sm"
+                    />
+                  </div>
+
+                  <div className="space-y-2 mb-2">
+                    {field.nested_schema?.fields.map((nestedField, nestedIndex) => (
+                      <div key={nestedIndex} className="bg-white p-3 rounded border border-gray-200">
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="text-xs font-semibold text-gray-600">
+                            Nested Field {nestedIndex + 1}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => removeNestedField(index, nestedIndex)}
+                            className="px-2 py-0.5 text-xs bg-red-100 text-red-700 rounded hover:bg-red-200 transition"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                        <div className="grid grid-cols-3 gap-2 mb-2">
+                          <input
+                            type="text"
+                            value={nestedField.name}
+                            onChange={(e) => updateNestedField(index, nestedIndex, { name: e.target.value })}
+                            placeholder="Field name"
+                            className="px-2 py-1.5 border border-gray-300 rounded text-xs focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                          />
+                          <select
+                            value={nestedField.type}
+                            onChange={(e) => updateNestedField(index, nestedIndex, { type: e.target.value })}
+                            className="px-2 py-1.5 border border-gray-300 rounded text-xs focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                          >
+                            <option value="str">String</option>
+                            <option value="int">Integer</option>
+                            <option value="float">Float</option>
+                            <option value="bool">Boolean</option>
+                            <option value="list">List</option>
+                          </select>
+                          <input
+                            type="text"
+                            value={nestedField.description}
+                            onChange={(e) => updateNestedField(index, nestedIndex, { description: e.target.value })}
+                            placeholder="Description"
+                            className="px-2 py-1.5 border border-gray-300 rounded text-xs focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                          />
+                        </div>
+                        <label className="inline-flex items-center cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={nestedField.required}
+                            onChange={(e) => updateNestedField(index, nestedIndex, { required: e.target.checked })}
+                            className="mr-1.5 h-3 w-3 text-purple-600 border-gray-300 rounded focus:ring-purple-600"
+                          />
+                          <span className="text-xs text-gray-700">Required</span>
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => addNestedField(index)}
+                    className="px-3 py-1.5 text-xs bg-purple-600 text-white rounded hover:bg-purple-700 transition"
+                  >
+                    + Add Nested Field
+                  </button>
+                </div>
+              )}
             </div>
           ))}
         </div>

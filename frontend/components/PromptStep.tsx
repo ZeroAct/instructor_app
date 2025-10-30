@@ -39,8 +39,8 @@ export default function PromptStep({
         provider: modelConfig.provider,
         model: modelConfig.model,
         api_key: modelConfig.apiKey,
-        temperature: modelConfig.temperature,
-        max_tokens: modelConfig.maxTokens,
+        temperature: modelConfig.temperature ?? 0.7,
+        max_tokens: modelConfig.maxTokens ?? 1000,
         stream: false,
         extract_list: extractList,
       });
