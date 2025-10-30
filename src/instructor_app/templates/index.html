@@ -281,6 +281,40 @@
             font-size: 12px;
             padding: 4px 8px;
         }
+
+        /* Inline/toggle checkbox layout */
+        .checkbox-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 14px;
+        }
+        .checkbox-row label {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin: 0; /* override label block spacing */
+            font-weight: 500;
+        }
+        .checkbox-row input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+        }
+
+        /* Reusable inline checkbox for other sections */
+        .inline-checkbox {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin: 6px 0 0 0;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        .inline-checkbox input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+        }
+        .nested-field-item .inline-checkbox { font-size: 13px; }
     </style>
 </head>
 <body>
@@ -328,7 +362,7 @@
                                 <option value="nested">Nested Schema</option>
                             </select>
                             <input type="text" placeholder="Description" class="field-description" value="User's full name">
-                            <label><input type="checkbox" class="field-required" checked> Required</label>
+                            <label class="inline-checkbox"><input type="checkbox" class="field-required" checked> Required</label>
                             
                             <!-- Nested schema container -->
                             <div class="nested-schema-container" data-parent-index="0">
@@ -374,11 +408,11 @@
                     </div>
                     
                     <div class="form-group">
-                        <label><input type="checkbox" id="streamMode"> Enable Streaming</label>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label><input type="checkbox" id="extractList"> Extract as List</label>
+                        <label>Options</label>
+                        <div class="checkbox-row">
+                            <label for="streamMode"><input type="checkbox" id="streamMode"> Enable Streaming</label>
+                            <label for="extractList"><input type="checkbox" id="extractList"> Extract as List</label>
+                        </div>
                         <div class="help-text">Extract multiple instances instead of a single object</div>
                     </div>
                     
@@ -446,7 +480,7 @@
                     <option value="list">List</option>
                 </select>
                 <input type="text" placeholder="Description" class="nested-field-description">
-                <label style="font-size: 13px;"><input type="checkbox" class="nested-field-required" checked> Required</label>
+                <label class="inline-checkbox"><input type="checkbox" class="nested-field-required" checked> Required</label>
             `;
             nestedContainer.appendChild(nestedFieldItem);
         }
@@ -479,7 +513,7 @@
                     <option value="nested">Nested Schema</option>
                 </select>
                 <input type="text" placeholder="Description" class="field-description">
-                <label><input type="checkbox" class="field-required" checked> Required</label>
+                <label class="inline-checkbox"><input type="checkbox" class="field-required" checked> Required</label>
                 
                 <!-- Nested schema container -->
                 <div class="nested-schema-container" data-parent-index="${fieldCounter}">
