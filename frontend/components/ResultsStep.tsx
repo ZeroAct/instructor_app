@@ -88,13 +88,13 @@ export default function ResultsStep({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-gray-900">📊 Results</h2>
+        <h2 className="text-xl font-bold text-gray-900">📊 Results</h2>
         <div className="flex gap-2">
           <button
             onClick={() => setViewMode('formatted')}
-            className={`px-4 py-2 rounded-lg transition ${
+            className={`px-3 py-1.5 text-sm rounded-lg transition ${
               viewMode === 'formatted'
                 ? 'bg-purple-600 text-white'
                 : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
@@ -104,7 +104,7 @@ export default function ResultsStep({
           </button>
           <button
             onClick={() => setViewMode('raw')}
-            className={`px-4 py-2 rounded-lg transition ${
+            className={`px-3 py-1.5 text-sm rounded-lg transition ${
               viewMode === 'raw'
                 ? 'bg-purple-600 text-white'
                 : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
@@ -115,20 +115,20 @@ export default function ResultsStep({
         </div>
       </div>
 
-      <div className="bg-blue-50 border-l-4 border-purple-600 p-4 rounded">
+      <div className="bg-blue-50 border-l-4 border-purple-600 p-3 rounded">
         <p className="text-sm text-gray-700">
           <strong className="text-purple-600">Success!</strong> Your structured data has been extracted. Toggle between formatted and raw JSON views.
         </p>
       </div>
 
-      <div className="bg-white border-2 border-gray-200 rounded-lg p-6 min-h-[400px] max-h-[600px] overflow-y-auto">
+      <div className="bg-white border-2 border-gray-200 rounded-lg p-4 min-h-[300px] max-h-[500px] overflow-y-auto">
         {viewMode === 'formatted' ? (
           <div className="space-y-2">
-            <div className="text-sm text-gray-500 mb-4">Formatted View</div>
+            <div className="text-xs text-gray-500 mb-3">Formatted View</div>
             {renderFormattedResult(result)}
           </div>
         ) : (
-          <pre className="text-sm font-mono whitespace-pre-wrap break-words">
+          <pre className="text-xs font-mono whitespace-pre-wrap break-words">
             {JSON.stringify(result, null, 2)}
           </pre>
         )}
@@ -136,7 +136,7 @@ export default function ResultsStep({
 
       {exportMessage && (
         <div
-          className={`p-4 rounded-lg ${
+          className={`p-3 rounded-lg text-sm ${
             exportMessage.startsWith('✓')
               ? 'bg-green-50 text-green-800 border border-green-200'
               : 'bg-red-50 text-red-800 border border-red-200'
@@ -146,31 +146,31 @@ export default function ResultsStep({
         </div>
       )}
 
-      <div className="flex gap-3">
+      <div className="flex gap-2">
         <button
           onClick={() => handleExport('json')}
-          className="px-4 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition"
+          className="px-3 py-1.5 text-sm bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition"
         >
           📥 Export JSON
         </button>
         <button
           onClick={() => handleExport('markdown')}
-          className="px-4 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition"
+          className="px-3 py-1.5 text-sm bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition"
         >
           📝 Export Markdown
         </button>
       </div>
 
-      <div className="flex justify-between pt-4 border-t">
+      <div className="flex justify-between pt-3 border-t">
         <button
           onClick={onPrevious}
-          className="px-6 py-3 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition"
+          className="px-4 py-2 text-sm bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition"
         >
           ← Previous: Prompt
         </button>
         <button
           onClick={onReset}
-          className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+          className="px-4 py-2 text-sm bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
         >
           🔄 Start New Extraction
         </button>

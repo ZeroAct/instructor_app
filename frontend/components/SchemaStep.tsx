@@ -126,11 +126,11 @@ export default function SchemaStep({ schema, setSchema, onNext }: SchemaStepProp
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-gray-900">📋 Schema Definition</h2>
+        <h2 className="text-xl font-bold text-gray-900">📋 Schema Definition</h2>
         <div className="flex gap-2">
-          <label className="px-4 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition cursor-pointer">
+          <label className="px-3 py-1.5 text-sm bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition cursor-pointer">
             📥 Import
             <input
               type="file"
@@ -141,48 +141,48 @@ export default function SchemaStep({ schema, setSchema, onNext }: SchemaStepProp
           </label>
           <button
             onClick={handleExport}
-            className="px-4 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition"
+            className="px-3 py-1.5 text-sm bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition"
           >
             📤 Export
           </button>
         </div>
       </div>
 
-      <div className="bg-blue-50 border-l-4 border-purple-600 p-4 rounded">
+      <div className="bg-blue-50 border-l-4 border-purple-600 p-3 rounded">
         <p className="text-sm text-gray-700">
           <strong className="text-purple-600">Quick Start:</strong> Define the fields you want to extract from your text. You can import an existing schema or build one from scratch.
         </p>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
+          <label className="block text-sm font-semibold text-gray-700 mb-1.5">
             Schema Name
           </label>
           <input
             type="text"
             value={schema.name}
             onChange={(e) => setSchema({ ...schema, name: e.target.value })}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+            className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
             placeholder="e.g., UserProfile"
           />
         </div>
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
+          <label className="block text-sm font-semibold text-gray-700 mb-1.5">
             Schema Description
           </label>
           <input
             type="text"
             value={schema.description}
             onChange={(e) => setSchema({ ...schema, description: e.target.value })}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+            className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
             placeholder="Describe your schema..."
           />
         </div>
       </div>
 
       <div>
-        <div className="flex justify-between items-center mb-3">
+        <div className="flex justify-between items-center mb-2">
           <label className="block text-sm font-semibold text-gray-700">Fields</label>
           <button
             onClick={addField}
@@ -192,25 +192,25 @@ export default function SchemaStep({ schema, setSchema, onNext }: SchemaStepProp
           </button>
         </div>
 
-        <div className="space-y-3 max-h-96 overflow-y-auto">
+        <div className="space-y-2 max-h-80 overflow-y-auto">
           {schema.fields.map((field, index) => (
-            <div key={index} className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-              <div className="flex justify-between items-start mb-3">
-                <span className="font-semibold text-gray-700">Field {index + 1}</span>
+            <div key={index} className="bg-gray-50 p-3 rounded-lg border border-gray-200">
+              <div className="flex justify-between items-start mb-2">
+                <span className="font-semibold text-sm text-gray-700">Field {index + 1}</span>
                 <button
                   onClick={() => removeField(index)}
-                  className="px-2 py-1 text-sm bg-red-100 text-red-700 rounded hover:bg-red-200 transition"
+                  className="px-2 py-0.5 text-xs bg-red-100 text-red-700 rounded hover:bg-red-200 transition"
                 >
                   Remove
                 </button>
               </div>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-3 gap-2">
                 <input
                   type="text"
                   value={field.name}
                   onChange={(e) => updateField(index, { name: e.target.value })}
                   placeholder="Field name"
-                  className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent text-sm"
+                  className="px-2 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent text-sm"
                 />
                 <select
                   value={field.type}
@@ -229,7 +229,7 @@ export default function SchemaStep({ schema, setSchema, onNext }: SchemaStepProp
                       updateField(index, { type: newType });
                     }
                   }}
-                  className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent text-sm"
+                  className="px-2 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent text-sm"
                 >
                   <option value="str">String</option>
                   <option value="int">Integer</option>
@@ -243,16 +243,16 @@ export default function SchemaStep({ schema, setSchema, onNext }: SchemaStepProp
                   value={field.description}
                   onChange={(e) => updateField(index, { description: e.target.value })}
                   placeholder="Description"
-                  className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent text-sm"
+                  className="px-2 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent text-sm"
                 />
               </div>
-              <div className="mt-2">
+              <div className="mt-1.5">
                 <label className="inline-flex items-center cursor-pointer">
                   <input
                     type="checkbox"
                     checked={field.required}
                     onChange={(e) => updateField(index, { required: e.target.checked })}
-                    className="mr-2 h-4 w-4 text-purple-600 border-gray-300 rounded focus:ring-purple-600"
+                    className="mr-2 h-3.5 w-3.5 text-purple-600 border-gray-300 rounded focus:ring-purple-600"
                   />
                   <span className="text-sm text-gray-700">Required</span>
                 </label>
@@ -260,51 +260,51 @@ export default function SchemaStep({ schema, setSchema, onNext }: SchemaStepProp
 
               {/* Nested Schema Section */}
               {field.type === 'nested' && (
-                <div className="mt-3 p-3 bg-purple-50 border-2 border-dashed border-purple-300 rounded-lg">
-                  <div className="mb-3">
+                <div className="mt-2 p-2.5 bg-purple-50 border-2 border-dashed border-purple-300 rounded-lg">
+                  <div className="mb-2">
                     <input
                       type="text"
                       value={field.nested_schema?.name || ''}
                       onChange={(e) => updateNestedSchemaInfo(index, { name: e.target.value })}
                       placeholder="Nested schema name"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent text-sm font-semibold mb-2"
+                      className="w-full px-2 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent text-sm font-semibold mb-1.5"
                     />
                     <input
                       type="text"
                       value={field.nested_schema?.description || ''}
                       onChange={(e) => updateNestedSchemaInfo(index, { description: e.target.value })}
                       placeholder="Nested schema description"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent text-sm"
+                      className="w-full px-2 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent text-sm"
                     />
                   </div>
 
-                  <div className="space-y-2 mb-2">
+                  <div className="space-y-1.5 mb-2">
                     {field.nested_schema?.fields.map((nestedField, nestedIndex) => (
-                      <div key={nestedIndex} className="bg-white p-3 rounded border border-gray-200">
-                        <div className="flex justify-between items-center mb-2">
+                      <div key={nestedIndex} className="bg-white p-2 rounded border border-gray-200">
+                        <div className="flex justify-between items-center mb-1.5">
                           <span className="text-xs font-semibold text-gray-600">
                             Nested Field {nestedIndex + 1}
                           </span>
                           <button
                             type="button"
                             onClick={() => removeNestedField(index, nestedIndex)}
-                            className="px-2 py-0.5 text-xs bg-red-100 text-red-700 rounded hover:bg-red-200 transition"
+                            className="px-1.5 py-0.5 text-xs bg-red-100 text-red-700 rounded hover:bg-red-200 transition"
                           >
                             Remove
                           </button>
                         </div>
-                        <div className="grid grid-cols-3 gap-2 mb-2">
+                        <div className="grid grid-cols-3 gap-1.5 mb-1.5">
                           <input
                             type="text"
                             value={nestedField.name}
                             onChange={(e) => updateNestedField(index, nestedIndex, { name: e.target.value })}
                             placeholder="Field name"
-                            className="px-2 py-1.5 border border-gray-300 rounded text-xs focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                            className="px-2 py-1 border border-gray-300 rounded text-xs focus:ring-2 focus:ring-purple-600 focus:border-transparent"
                           />
                           <select
                             value={nestedField.type}
                             onChange={(e) => updateNestedField(index, nestedIndex, { type: e.target.value })}
-                            className="px-2 py-1.5 border border-gray-300 rounded text-xs focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                            className="px-2 py-1 border border-gray-300 rounded text-xs focus:ring-2 focus:ring-purple-600 focus:border-transparent"
                           >
                             <option value="str">String</option>
                             <option value="int">Integer</option>
@@ -317,7 +317,7 @@ export default function SchemaStep({ schema, setSchema, onNext }: SchemaStepProp
                             value={nestedField.description}
                             onChange={(e) => updateNestedField(index, nestedIndex, { description: e.target.value })}
                             placeholder="Description"
-                            className="px-2 py-1.5 border border-gray-300 rounded text-xs focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                            className="px-2 py-1 border border-gray-300 rounded text-xs focus:ring-2 focus:ring-purple-600 focus:border-transparent"
                           />
                         </div>
                         <label className="inline-flex items-center cursor-pointer">
@@ -336,7 +336,7 @@ export default function SchemaStep({ schema, setSchema, onNext }: SchemaStepProp
                   <button
                     type="button"
                     onClick={() => addNestedField(index)}
-                    className="px-3 py-1.5 text-xs bg-purple-600 text-white rounded hover:bg-purple-700 transition"
+                    className="px-2.5 py-1 text-xs bg-purple-600 text-white rounded hover:bg-purple-700 transition"
                   >
                     + Add Nested Field
                   </button>
@@ -349,7 +349,7 @@ export default function SchemaStep({ schema, setSchema, onNext }: SchemaStepProp
 
       {validationMessage && (
         <div
-          className={`p-4 rounded-lg ${
+          className={`p-3 rounded-lg ${
             validationMessage.startsWith('✓')
               ? 'bg-green-50 text-green-800 border border-green-200'
               : 'bg-red-50 text-red-800 border border-red-200'
@@ -359,17 +359,17 @@ export default function SchemaStep({ schema, setSchema, onNext }: SchemaStepProp
         </div>
       )}
 
-      <div className="flex justify-between pt-4">
+      <div className="flex justify-between pt-3">
         <button
           onClick={handleValidate}
           disabled={isValidating}
-          className="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition disabled:opacity-50"
+          className="px-4 py-2 text-sm bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition disabled:opacity-50"
         >
           {isValidating ? 'Validating...' : 'Validate Schema'}
         </button>
         <button
           onClick={onNext}
-          className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+          className="px-4 py-2 text-sm bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
         >
           Next: Enter Prompt →
         </button>
