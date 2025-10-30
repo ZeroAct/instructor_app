@@ -22,6 +22,7 @@
     "title": "Schema Definition",
     "import": "Import",
     "export": "Export",
+    "examples": "Examples",
     "quickStart": "Quick Start:",
     "quickStartText": "Define the fields you want to extract from your text. You can import an existing schema or build one from scratch.",
     "schemaName": "Schema Name",

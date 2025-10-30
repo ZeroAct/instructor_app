@@ -170,6 +170,7 @@ export default function InstructorApp() {
             <SchemaStep
               schema={schema}
               setSchema={setSchema}
+              setPrompt={setPrompt}
               onNext={handleNext}
             />
           )}

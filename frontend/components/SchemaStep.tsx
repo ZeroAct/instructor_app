@@ -8,13 +8,73 @@ import { validateSchema } from '@/lib/api';
 interface SchemaStepProps {
   schema: SchemaDefinition;
   setSchema: (schema: SchemaDefinition) => void;
+  setPrompt?: (prompt: string) => void;
   onNext: () => void;
 }
 
-export default function SchemaStep({ schema, setSchema, onNext }: SchemaStepProps) {
+export default function SchemaStep({ schema, setSchema, setPrompt, onNext }: SchemaStepProps) {
   const t = useTranslations('schemaStep');
   const [validationMessage, setValidationMessage] = useState<string | null>(null);
   const [isValidating, setIsValidating] = useState(false);
+  const [showExamples, setShowExamples] = useState(false);
+
+  const presetExamples = [
+    {
+      name: 'Article',
+      schema: {
+        name: 'Article',
+        description: 'Extract article metadata',
+        fields: [
+          { name: 'title', type: 'str' as const, description: 'Article title', required: true },
+          { name: 'subject', type: 'str' as const, description: 'Subject or category', required: true },
+          { name: 'date', type: 'str' as const, description: 'Publication date', required: true },
+          { name: 'writer', type: 'str' as const, description: 'Author name', required: true },
+        ],
+      },
+      prompt: 'Extract article information from the following text: "The Future of AI - Technology section - Published on 2024-01-15 by John Smith. Artificial intelligence continues to transform industries..."',
+    },
+    {
+      name: 'Stock Analysis',
+      schema: {
+        name: 'StockAnalysis',
+        description: 'Stock market sentiment analysis',
+        fields: [
+          { name: 'bullish', type: 'bool' as const, description: 'Bullish sentiment indicator', required: true },
+          { name: 'bearish', type: 'bool' as const, description: 'Bearish sentiment indicator', required: true },
+        ],
+      },
+      prompt: 'Analyze the market sentiment: "The stock showed strong upward momentum with increasing volume. Technical indicators suggest continued growth potential. However, some analysts remain cautious about overvaluation."',
+    },
+    {
+      name: 'Code Variable',
+      schema: {
+        name: 'CodeVariable',
+        description: 'Extract code variable information',
+        fields: [
+          {
+            name: 'variable',
+            type: 'object' as const,
+            description: 'Variable details',
+            required: true,
+            fields: [
+              { name: 'name', type: 'str' as const, description: 'Variable name', required: true },
+              { name: 'data_type', type: 'str' as const, description: 'Data type', required: true },
+              { name: 'description', type: 'str' as const, description: 'Variable description', required: true },
+            ],
+          },
+        ],
+      },
+      prompt: 'Extract variable information from: "let userCount: number = 0; // Tracks the total number of active users in the system"',
+    },
+  ];
+
+  const loadExample = (example: typeof presetExamples[0]) => {
+    setSchema(example.schema);
+    if (setPrompt) {
+      setPrompt(example.prompt);
+    }
+    setShowExamples(false);
+  };
 
   const addField = () => {
     setSchema({
@@ -120,6 +180,12 @@ export default function SchemaStep({ schema, setSchema, onNext }: SchemaStepProp
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-bold text-gray-900">📋 {t('title')}</h2>
         <div className="flex gap-2">
+          <button
+            onClick={() => setShowExamples(!showExamples)}
+            className="px-3 py-1.5 text-sm bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition"
+          >
+            💡 {t('examples')}
+          </button>
           <label className="px-3 py-1.5 text-sm bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition cursor-pointer">
             📥 {t('import')}
             <input
@@ -137,6 +203,36 @@ export default function SchemaStep({ schema, setSchema, onNext }: SchemaStepProp
           </button>
         </div>
       </div>
+
+      {/* Examples Modal */}
+      {showExamples && (
+        <div className="bg-gradient-to-r from-green-50 to-blue-50 border-2 border-green-300 rounded-lg p-4">
+          <div className="flex justify-between items-center mb-3">
+            <h3 className="text-lg font-semibold text-gray-900">📚 Preset Examples</h3>
+            <button
+              onClick={() => setShowExamples(false)}
+              className="text-gray-500 hover:text-gray-700"
+            >
+              ✕
+            </button>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {presetExamples.map((example, index) => (
+              <button
+                key={index}
+                onClick={() => loadExample(example)}
+                className="text-left p-4 bg-white rounded-lg border-2 border-gray-200 hover:border-green-400 hover:shadow-md transition"
+              >
+                <div className="font-semibold text-purple-700 mb-2">{example.name}</div>
+                <div className="text-xs text-gray-600 mb-2">{example.schema.description}</div>
+                <div className="text-xs text-gray-500">
+                  {example.schema.fields.length} field{example.schema.fields.length !== 1 ? 's' : ''}
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="bg-blue-50 border-l-4 border-purple-600 p-3 rounded">
         <p className="text-sm text-gray-700">

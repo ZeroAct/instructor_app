@@ -22,6 +22,7 @@
     "title": "스키마 정의",
     "import": "가져오기",
     "export": "내보내기",
+    "examples": "예제",
     "quickStart": "빠른 시작:",
     "quickStartText": "텍스트에서 추출할 필드를 정의하세요. 기존 스키마를 가져오거나 처음부터 만들 수 있습니다.",
     "schemaName": "스키마 이름",
