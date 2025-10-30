@@ -33,17 +33,23 @@ export default function PromptStep({
     setError(null);
 
     try {
-      const result = await runCompletion({
+      // Build request with dynamic parameters from config
+      const requestParams: any = {
         schema_def: schema,
         messages: [{ role: 'user', content: prompt }],
         provider: modelConfig.provider,
         model: modelConfig.model,
         api_key: modelConfig.apiKey,
-        temperature: modelConfig.temperature ?? 0.7,
-        max_tokens: modelConfig.maxTokens ?? 1000,
         stream: false,
         extract_list: extractList,
+      };
+
+      // Add custom parameters from model config
+      modelConfig.parameters.forEach((param) => {
+        requestParams[param.key] = param.value;
       });
+
+      const result = await runCompletion(requestParams);
 
       onNext(result.result);
     } catch (err: any) {
@@ -107,7 +113,7 @@ export default function PromptStep({
           onClick={onPrevious}
           className="px-6 py-3 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition"
         >
-          ← Previous: Model Config
+          ← Previous: Schema
         </button>
         <button
           onClick={handleRun}

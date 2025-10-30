@@ -371,7 +371,7 @@ export default function SchemaStep({ schema, setSchema, onNext }: SchemaStepProp
           onClick={onNext}
           className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
         >
-          Next: Configure Model →
+          Next: Enter Prompt →
         </button>
       </div>
     </div>

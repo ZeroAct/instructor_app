@@ -25,12 +25,17 @@ export interface SchemaDefinition {
   fields: SchemaField[];
 }
 
+export interface ModelParameter {
+  key: string;
+  value: string | number;
+  type: 'string' | 'number';
+}
+
 export interface ModelConfig {
   provider: 'openai' | 'anthropic';
   model?: string;
   apiKey?: string;
-  temperature?: number;
-  maxTokens?: number;
+  parameters: ModelParameter[];
 }
 
 export interface CompletionRequest {
@@ -43,6 +48,7 @@ export interface CompletionRequest {
   temperature?: number;
   stream?: boolean;
   extract_list?: boolean;
+  [key: string]: any; // Allow dynamic parameters
 }
 
 export interface CompletionResult {

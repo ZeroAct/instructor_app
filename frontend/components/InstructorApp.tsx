@@ -4,9 +4,9 @@ import { useState, useEffect } from 'react';
 import { SchemaDefinition, ModelConfig } from '@/types/schema';
 import StepIndicator from './StepIndicator';
 import SchemaStep from './SchemaStep';
-import ModelConfigStep from './ModelConfigStep';
 import PromptStep from './PromptStep';
 import ResultsStep from './ResultsStep';
+import SettingsDialog from './SettingsDialog';
 
 const STORAGE_KEYS = {
   SCHEMA: 'instructor_app_schema',
@@ -30,8 +30,12 @@ const DEFAULT_SCHEMA: SchemaDefinition = {
 
 const DEFAULT_MODEL_CONFIG: ModelConfig = {
   provider: 'openai',
-  temperature: 0.7,
-  maxTokens: 1000,
+  model: undefined,
+  apiKey: undefined,
+  parameters: [
+    { key: 'temperature', value: 0.7, type: 'number' },
+    { key: 'max_tokens', value: 1000, type: 'number' },
+  ],
 };
 
 const DEFAULT_PROMPT = 'Extract user profile information from the following text: John Doe is a 30 year old software engineer living in San Francisco.';
@@ -43,6 +47,7 @@ export default function InstructorApp() {
   const [prompt, setPrompt] = useState(DEFAULT_PROMPT);
   const [result, setResult] = useState<any>(null);
   const [extractList, setExtractList] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   // Load from localStorage on mount
   useEffect(() => {
@@ -106,13 +111,12 @@ export default function InstructorApp() {
 
   const steps = [
     { number: 1, title: 'Schema', description: 'Define data structure' },
-    { number: 2, title: 'Model', description: 'Configure LLM' },
-    { number: 3, title: 'Prompt', description: 'Input text' },
-    { number: 4, title: 'Results', description: 'View output' },
+    { number: 2, title: 'Prompt', description: 'Input text' },
+    { number: 3, title: 'Results', description: 'View output' },
   ];
 
   const handleNext = () => {
-    if (currentStep < 4) setCurrentStep(currentStep + 1);
+    if (currentStep < 3) setCurrentStep(currentStep + 1);
   };
 
   const handlePrevious = () => {
@@ -123,11 +127,31 @@ export default function InstructorApp() {
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50">
       {/* Header */}
       <header className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg">
-        <div className="container mx-auto px-4 py-6">
-          <h1 className="text-3xl font-bold">🎓 Instructor App</h1>
-          <p className="text-purple-100 mt-1">Structured LLM Outputs with Dynamic Schemas</p>
+        <div className="container mx-auto px-4 py-6 flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold">🎓 Instructor App</h1>
+            <p className="text-purple-100 mt-1">Structured LLM Outputs with Dynamic Schemas</p>
+          </div>
+          <button
+            onClick={() => setIsSettingsOpen(true)}
+            className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition flex items-center gap-2"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            Settings
+          </button>
         </div>
       </header>
+
+      {/* Settings Dialog */}
+      <SettingsDialog
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        config={modelConfig}
+        setConfig={setModelConfig}
+      />
 
       {/* Step Indicator */}
       <div className="container mx-auto px-4 py-8">
@@ -145,14 +169,6 @@ export default function InstructorApp() {
             />
           )}
           {currentStep === 2 && (
-            <ModelConfigStep
-              config={modelConfig}
-              setConfig={setModelConfig}
-              onNext={handleNext}
-              onPrevious={handlePrevious}
-            />
-          )}
-          {currentStep === 3 && (
             <PromptStep
               prompt={prompt}
               setPrompt={setPrompt}
@@ -167,7 +183,7 @@ export default function InstructorApp() {
               onPrevious={handlePrevious}
             />
           )}
-          {currentStep === 4 && (
+          {currentStep === 3 && (
             <ResultsStep
               result={result}
               schema={schema}
