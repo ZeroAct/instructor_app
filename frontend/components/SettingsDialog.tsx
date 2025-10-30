@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ModelConfig, ModelParameter } from '@/types/schema';
 
 interface SettingsDialogProps {
@@ -30,6 +30,13 @@ export default function SettingsDialog({
   setConfig,
 }: SettingsDialogProps) {
   const [localConfig, setLocalConfig] = useState<ModelConfig>(config);
+
+  // Sync localConfig with config prop when dialog opens or config changes
+  useEffect(() => {
+    if (isOpen) {
+      setLocalConfig(config);
+    }
+  }, [isOpen, config]);
 
   if (!isOpen) return null;
 

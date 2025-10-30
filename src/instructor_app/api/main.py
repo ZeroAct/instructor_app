@@ -30,10 +30,11 @@ class CompletionRequest(BaseModel):
     provider: str = "openai"
     model: str | None = None
     api_key: str | None = None
-    max_tokens: int = 1000
-    temperature: float = 0.7
     stream: bool = False
     extract_list: bool = False  # Extract a list of objects instead of a single object
+    
+    class Config:
+        extra = "allow"  # Allow extra fields for dynamic parameters
 
 
 class ExportRequest(BaseModel):
@@ -114,6 +115,16 @@ async def create_completion(request: CompletionRequest):
             api_key=request.api_key,
             model=request.model,
         )
+        
+        # Extract dynamic parameters (exclude the fields we handle separately)
+        excluded_fields = {'schema_def', 'messages', 'provider', 'model', 'api_key', 'stream', 'extract_list'}
+        dynamic_params = {k: v for k, v in request.model_dump().items() if k not in excluded_fields}
+        
+        # Set default values if not provided
+        if 'max_tokens' not in dynamic_params:
+            dynamic_params['max_tokens'] = 1000
+        if 'temperature' not in dynamic_params:
+            dynamic_params['temperature'] = 0.7
 
         if request.stream:
             # Return streaming response
@@ -121,8 +132,7 @@ async def create_completion(request: CompletionRequest):
                 async for partial in client.create_streaming_completion(
                     response_model=response_model,
                     messages=request.messages,
-                    max_tokens=request.max_tokens,
-                    temperature=request.temperature,
+                    **dynamic_params,
                 ):
                     # Send partial results as JSON
                     if request.extract_list:
@@ -138,8 +148,7 @@ async def create_completion(request: CompletionRequest):
             result = await client.create_completion(
                 response_model=response_model,
                 messages=request.messages,
-                max_tokens=request.max_tokens,
-                temperature=request.temperature,
+                **dynamic_params,
             )
             
             if request.extract_list:
