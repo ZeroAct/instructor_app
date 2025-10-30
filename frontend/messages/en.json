@@ -52,7 +52,7 @@
       "float": "Float",
       "boolean": "Boolean",
       "list": "List",
-      "nested": "Nested Schema"
+      "nested": "Object"
     }
   },
   "promptStep": {

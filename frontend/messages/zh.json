@@ -52,7 +52,7 @@
       "float": "浮点数",
       "boolean": "布尔值",
       "list": "列表",
-      "nested": "嵌套模式"
+      "nested": "对象"
     }
   },
   "promptStep": {

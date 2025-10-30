@@ -52,7 +52,7 @@
       "float": "실수",
       "boolean": "부울",
       "list": "목록",
-      "nested": "중첩 스키마"
+      "nested": "객체"
     }
   },
   "promptStep": {
