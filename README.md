@@ -17,7 +17,25 @@ Web application for [Instructor](https://github.com/567-labs/instructor) - struc
 
 ## Quick Start
 
-### Using UV (Recommended)
+### Using Docker (Recommended)
+
+Run both frontend and backend with a single command:
+
+```bash
+# Production mode
+docker-compose up --build
+
+# Development mode with hot reload
+docker-compose -f docker-compose.dev.yml up
+```
+
+Then access:
+- **Frontend**: http://localhost:3000 (Modern Next.js UI)
+- **Backend API**: http://localhost:8000 (Legacy HTML UI + API)
+
+See [DOCKER.md](DOCKER.md) for detailed Docker instructions.
+
+### Using UV
 
 ```bash
 # Install dependencies
@@ -28,17 +46,6 @@ python main.py
 
 # Or run with uvicorn directly
 uv run uvicorn src.instructor_app.api.main:app --reload
-```
-
-### Using Docker
-
-```bash
-# Build and run with docker-compose
-docker-compose up --build
-
-# Or build and run manually
-docker build -t instructor-app .
-docker run -p 8000:8000 -e OPENAI_API_KEY=your_key instructor-app
 ```
 
 ### Environment Variables
