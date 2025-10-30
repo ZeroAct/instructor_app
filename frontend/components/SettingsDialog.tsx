@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { ModelConfig, ModelParameter } from '@/types/schema';
+import { validateModel } from '@/lib/api';
 
 interface SettingsDialogProps {
   isOpen: boolean;
@@ -30,15 +31,38 @@ export default function SettingsDialog({
   setConfig,
 }: SettingsDialogProps) {
   const [localConfig, setLocalConfig] = useState<ModelConfig>(config);
+  const [isValidating, setIsValidating] = useState(false);
+  const [validationResult, setValidationResult] = useState<{ valid: boolean; message: string } | null>(null);
 
   // Sync localConfig with config prop when dialog opens or config changes
   useEffect(() => {
     if (isOpen) {
       setLocalConfig(config);
+      setValidationResult(null); // Reset validation when opening
     }
   }, [isOpen, config]);
 
   if (!isOpen) return null;
+
+  const handleValidateModel = async () => {
+    setIsValidating(true);
+    setValidationResult(null);
+    
+    try {
+      const result = await validateModel(localConfig);
+      setValidationResult({
+        valid: result.valid,
+        message: result.message,
+      });
+    } catch (error: any) {
+      setValidationResult({
+        valid: false,
+        message: error.message,
+      });
+    } finally {
+      setIsValidating(false);
+    }
+  };
 
   const handleProviderChange = (provider: 'openai' | 'anthropic') => {
     setLocalConfig({
@@ -46,6 +70,7 @@ export default function SettingsDialog({
       provider,
       parameters: PROVIDER_DEFAULTS[provider] || [],
     });
+    setValidationResult(null); // Reset validation when provider changes
   };
 
   const handleAddParameter = () => {
@@ -236,22 +261,64 @@ export default function SettingsDialog({
               )}
             </div>
           </div>
+
+          {/* Model Validation Section */}
+          <div className="bg-green-50 p-4 rounded-lg border-2 border-green-200">
+            <h3 className="text-lg font-semibold text-gray-900 mb-3">Model Validation</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              Test your model configuration with a dummy request to verify it works correctly.
+            </p>
+            
+            <button
+              onClick={handleValidateModel}
+              disabled={isValidating}
+              className={`w-full px-4 py-2.5 rounded-lg font-semibold transition ${
+                isValidating
+                  ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
+                  : 'bg-green-600 text-white hover:bg-green-700'
+              }`}
+            >
+              {isValidating ? '🔄 Validating...' : '✓ Validate Model Configuration'}
+            </button>
+
+            {validationResult && (
+              <div className={`mt-3 p-3 rounded-lg ${
+                validationResult.valid 
+                  ? 'bg-green-100 border border-green-300 text-green-800'
+                  : 'bg-red-100 border border-red-300 text-red-800'
+              }`}>
+                <div className="font-semibold mb-1">
+                  {validationResult.valid ? '✓ Validation Successful' : '✗ Validation Failed'}
+                </div>
+                <div className="text-sm">{validationResult.message}</div>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Footer */}
-        <div className="border-t border-gray-200 px-6 py-4 bg-gray-50 flex justify-end gap-3">
-          <button
-            onClick={handleCancel}
-            className="px-6 py-2.5 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleSave}
-            className="px-6 py-2.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
-          >
-            Save Settings
-          </button>
+        <div className="border-t border-gray-200 px-6 py-4 bg-gray-50 flex justify-between gap-3">
+          <div>
+            {validationResult?.valid && (
+              <span className="text-green-600 text-sm font-semibold">
+                ✓ Model validated - Ready to use
+              </span>
+            )}
+          </div>
+          <div className="flex gap-3">
+            <button
+              onClick={handleCancel}
+              className="px-6 py-2.5 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSave}
+              className="px-6 py-2.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+            >
+              Save Settings
+            </button>
+          </div>
         </div>
       </div>
     </div>

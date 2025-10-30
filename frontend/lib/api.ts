@@ -1,4 +1,4 @@
-import { SchemaDefinition, CompletionRequest, CompletionResult } from '@/types/schema';
+import { SchemaDefinition, CompletionRequest, CompletionResult, ModelConfig } from '@/types/schema';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
@@ -12,6 +12,41 @@ export async function validateSchema(schema: SchemaDefinition) {
   if (!response.ok) {
     const error = await response.json();
     throw new Error(error.detail || 'Failed to validate schema');
+  }
+
+  return response.json();
+}
+
+export async function validateModel(config: ModelConfig) {
+  // Build request with model config
+  const requestParams: any = {
+    schema_def: {
+      name: "TestValidation",
+      description: "Test schema",
+      fields: []
+    },
+    messages: [],
+    provider: config.provider,
+    model: config.model,
+    api_key: config.apiKey,
+    stream: false,
+    extract_list: false,
+  };
+
+  // Add custom parameters from model config
+  config.parameters.forEach((param) => {
+    requestParams[param.key] = param.value;
+  });
+
+  const response = await fetch(`${API_BASE_URL}/api/model/validate`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(requestParams),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.detail || 'Failed to validate model');
   }
 
   return response.json();

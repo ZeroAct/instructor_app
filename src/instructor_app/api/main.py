@@ -40,7 +40,7 @@ class CompletionRequest(BaseModel):
 class ExportRequest(BaseModel):
     """Request model for export."""
 
-    data: Dict[str, Any]
+    data: Dict[str, Any] | list[Any]
     format: str = "json"  # json or markdown
     title: str = "Result"
 
@@ -159,6 +159,63 @@ async def create_completion(request: CompletionRequest):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Completion error: {str(e)}")
+
+
+@app.post("/api/model/validate")
+async def validate_model(request: CompletionRequest):
+    """Validate model configuration by sending a test request."""
+    try:
+        # Build a simple test schema
+        test_schema = {
+            "name": "TestValidation",
+            "description": "Test schema for model validation",
+            "fields": [
+                {"name": "status", "type": "str", "description": "Validation status", "required": True}
+            ]
+        }
+        
+        schema_dict = test_schema
+        test_model = DynamicSchemaBuilder.create_model_from_dict(schema_dict)
+        
+        # Initialize client
+        client = InstructorClient(
+            provider=request.provider,
+            api_key=request.api_key,
+            model=request.model,
+        )
+        
+        # Extract dynamic parameters
+        excluded_fields = {'schema_def', 'messages', 'provider', 'model', 'api_key', 'stream', 'extract_list'}
+        dynamic_params = {k: v for k, v in request.model_dump().items() if k not in excluded_fields}
+        
+        # Set minimal tokens for test
+        dynamic_params['max_tokens'] = dynamic_params.get('max_tokens', 100)
+        dynamic_params['temperature'] = dynamic_params.get('temperature', 0.7)
+        
+        # Test with a simple message
+        test_messages = [{"role": "user", "content": "Return status as 'success'"}]
+        
+        # Try to create completion
+        result = await client.create_completion(
+            response_model=test_model,
+            messages=test_messages,
+            **dynamic_params,
+        )
+        
+        return {
+            "valid": True,
+            "message": "Model configuration validated successfully",
+            "provider": request.provider,
+            "model": request.model or f"default ({client.model})",
+        }
+    
+    except Exception as e:
+        return {
+            "valid": False,
+            "message": f"Model validation failed: {str(e)}",
+            "provider": request.provider,
+            "model": request.model or "default",
+        }
 
 
 @app.post("/api/export")
