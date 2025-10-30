@@ -233,6 +233,14 @@
         .workflow-steps strong {
             color: #667eea;
         }
+        
+        .fields-container-spacing {
+            margin-top: 8px;
+        }
+        
+        .help-text-spaced {
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
@@ -264,7 +272,7 @@
                 <div class="field-builder">
                     <label>Fields</label>
                     <div class="help-text">Add the data fields you want to extract from your text</div>
-                    <div id="fieldsContainer" style="margin-top: 8px;">
+                    <div id="fieldsContainer" class="fields-container-spacing">
                         <div class="field-item" data-index="0">
                             <div class="field-item-header">
                                 <strong>Field 1</strong>
@@ -324,7 +332,7 @@
             
             <div class="section">
                 <h2>📊 Results</h2>
-                <div class="help-text" style="margin-bottom: 10px;">Structured data extracted from your prompt will appear here</div>
+                <div class="help-text help-text-spaced">Structured data extracted from your prompt will appear here</div>
                 <div id="alertContainer"></div>
                 <div class="result-container" id="resultContainer">
                     <p style="color: #999; text-align: center; padding: 40px 20px;">
