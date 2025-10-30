@@ -80,7 +80,7 @@ NEXT_PUBLIC_API_URL=http://your-api-url:8000 npm run dev
 - Validate schema before proceeding
 
 ### Step 2: Model Configuration
-- Select LLM provider (OpenAI or Anthropic)
+- Select LLM provider (OpenAI)
 - Configure model, temperature, and max tokens
 - Optionally provide API key (or use environment variables)
 

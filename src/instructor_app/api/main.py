@@ -119,12 +119,6 @@ async def create_completion(request: CompletionRequest):
         # Extract dynamic parameters (exclude the fields we handle separately)
         excluded_fields = {'schema_def', 'messages', 'provider', 'model', 'api_key', 'stream', 'extract_list'}
         dynamic_params = {k: v for k, v in request.model_dump().items() if k not in excluded_fields}
-        
-        # Set default values if not provided
-        if 'max_tokens' not in dynamic_params:
-            dynamic_params['max_tokens'] = 1000
-        if 'temperature' not in dynamic_params:
-            dynamic_params['temperature'] = 0.7
 
         if request.stream:
             # Return streaming response
@@ -187,10 +181,6 @@ async def validate_model(request: CompletionRequest):
         # Extract dynamic parameters
         excluded_fields = {'schema_def', 'messages', 'provider', 'model', 'api_key', 'stream', 'extract_list'}
         dynamic_params = {k: v for k, v in request.model_dump().items() if k not in excluded_fields}
-        
-        # Set minimal tokens for test
-        dynamic_params['max_tokens'] = dynamic_params.get('max_tokens', 100)
-        dynamic_params['temperature'] = dynamic_params.get('temperature', 0.7)
         
         # Test with a simple message
         test_messages = [{"role": "user", "content": "Return status as 'success'"}]

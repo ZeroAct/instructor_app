@@ -34,7 +34,6 @@ const DEFAULT_MODEL_CONFIG: ModelConfig = {
   apiKey: undefined,
   parameters: [
     { key: 'temperature', value: 0.7, type: 'number' },
-    { key: 'max_tokens', value: 1000, type: 'number' },
   ],
 };
 

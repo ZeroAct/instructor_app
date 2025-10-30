@@ -15,12 +15,7 @@ interface SettingsDialogProps {
 const PROVIDER_DEFAULTS: Record<string, ModelParameter[]> = {
   openai: [
     { key: 'temperature', value: 0.7, type: 'number' },
-    { key: 'max_tokens', value: 1000, type: 'number' },
     { key: 'top_p', value: 1, type: 'number' },
-  ],
-  anthropic: [
-    { key: 'temperature', value: 0.7, type: 'number' },
-    { key: 'max_tokens', value: 1000, type: 'number' },
   ],
 };
 
@@ -64,7 +59,7 @@ export default function SettingsDialog({
     }
   };
 
-  const handleProviderChange = (provider: 'openai' | 'anthropic') => {
+  const handleProviderChange = (provider: 'openai') => {
     setLocalConfig({
       ...localConfig,
       provider,
@@ -159,7 +154,6 @@ export default function SettingsDialog({
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
                 >
                   <option value="openai">OpenAI</option>
-                  <option value="anthropic">Anthropic</option>
                 </select>
               </div>
 
@@ -175,7 +169,7 @@ export default function SettingsDialog({
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
                 />
                 <p className="mt-1 text-sm text-gray-500">
-                  Defaults: gpt-4 for OpenAI, claude-3-opus for Anthropic
+                  Defaults: gpt-4 for OpenAI
                 </p>
               </div>
 
@@ -191,7 +185,7 @@ export default function SettingsDialog({
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
                 />
                 <p className="mt-1 text-sm text-gray-500">
-                  Uses {localConfig.provider === 'openai' ? 'OPENAI_API_KEY' : 'ANTHROPIC_API_KEY'} from environment if not provided
+                  Uses {localConfig.provider === 'openai' ? 'OPENAI_API_KEY' : undefined} from environment if not provided
                 </p>
               </div>
             </div>

@@ -32,7 +32,7 @@ export interface ModelParameter {
 }
 
 export interface ModelConfig {
-  provider: 'openai' | 'anthropic';
+  provider: 'openai';
   model?: string;
   apiKey?: string;
   parameters: ModelParameter[];
@@ -44,7 +44,6 @@ export interface CompletionRequest {
   provider: string;
   model?: string;
   api_key?: string;
-  max_tokens?: number;
   temperature?: number;
   stream?: boolean;
   extract_list?: boolean;

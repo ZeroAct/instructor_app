@@ -4,7 +4,6 @@ import os
 from typing import AsyncIterator, Dict, Optional, Type
 
 import instructor
-from anthropic import AsyncAnthropic
 from openai import AsyncOpenAI
 from pydantic import BaseModel
 
@@ -27,16 +26,12 @@ class InstructorClient:
         """Get default API key based on provider."""
         if self.provider == "openai":
             return os.getenv("OPENAI_API_KEY", "")
-        elif self.provider == "anthropic":
-            return os.getenv("ANTHROPIC_API_KEY", "")
         return ""
 
     def _get_default_model(self) -> str:
         """Get default model based on provider."""
         if self.provider == "openai":
             return "gpt-4o-mini"
-        elif self.provider == "anthropic":
-            return "claude-3-5-sonnet-20241022"
         return "gpt-4o-mini"
 
     def _initialize_client(self):
@@ -44,9 +39,6 @@ class InstructorClient:
         if self.provider == "openai":
             base_client = AsyncOpenAI(api_key=self.api_key)
             return instructor.from_openai(base_client)
-        elif self.provider == "anthropic":
-            base_client = AsyncAnthropic(api_key=self.api_key)
-            return instructor.from_anthropic(base_client)
         else:
             # Default to OpenAI
             base_client = AsyncOpenAI(api_key=self.api_key)
@@ -56,32 +48,28 @@ class InstructorClient:
         self,
         response_model: Type[BaseModel],
         messages: list[Dict[str, str]],
-        max_tokens: int = 1000,
-        temperature: float = 0.7,
+        **kwargs,
     ) -> BaseModel:
         """Create a completion with structured output."""
         return await self.client.chat.completions.create(
             model=self.model,
             response_model=response_model,
             messages=messages,
-            max_tokens=max_tokens,
-            temperature=temperature,
+            **kwargs,
         )
 
     async def create_streaming_completion(
         self,
         response_model: Type[BaseModel],
         messages: list[Dict[str, str]],
-        max_tokens: int = 1000,
-        temperature: float = 0.7,
+        **kwargs,
     ) -> AsyncIterator[BaseModel]:
         """Create a streaming completion with structured output."""
         async for partial in self.client.chat.completions.create_partial(
             model=self.model,
             response_model=response_model,
             messages=messages,
-            max_tokens=max_tokens,
-            temperature=temperature,
             stream=True,
+            **kwargs,
         ):
             yield partial

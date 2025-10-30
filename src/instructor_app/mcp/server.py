@@ -70,8 +70,8 @@ class InstructorMCPServer:
                             "prompt": {"type": "string", "description": "Prompt for the LLM"},
                             "provider": {
                                 "type": "string",
-                                "description": "LLM provider (openai or anthropic)",
-                                "enum": ["openai", "anthropic"],
+                                "description": "LLM provider (openai)",
+                                "enum": ["openai"],
                             },
                             "model": {"type": "string", "description": "Model name (optional)"},
                         },
