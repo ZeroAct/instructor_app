@@ -40,6 +40,7 @@ export default function PromptStep({
         provider: modelConfig.provider,
         model: modelConfig.model,
         api_key: modelConfig.apiKey,
+        base_url: modelConfig.baseUrl,
         stream: false,
         extract_list: extractList,
       };

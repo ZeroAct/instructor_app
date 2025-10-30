@@ -114,10 +114,11 @@ async def create_completion(request: CompletionRequest):
             provider=request.provider,
             api_key=request.api_key,
             model=request.model,
+            base_url=getattr(request, 'base_url', None),
         )
         
         # Extract dynamic parameters (exclude the fields we handle separately)
-        excluded_fields = {'schema_def', 'messages', 'provider', 'model', 'api_key', 'stream', 'extract_list'}
+        excluded_fields = {'schema_def', 'messages', 'provider', 'model', 'api_key', 'stream', 'extract_list', 'base_url'}
         dynamic_params = {k: v for k, v in request.model_dump().items() if k not in excluded_fields}
 
         if request.stream:
@@ -176,10 +177,11 @@ async def validate_model(request: CompletionRequest):
             provider=request.provider,
             api_key=request.api_key,
             model=request.model,
+            base_url=getattr(request, 'base_url', None),
         )
         
         # Extract dynamic parameters
-        excluded_fields = {'schema_def', 'messages', 'provider', 'model', 'api_key', 'stream', 'extract_list'}
+        excluded_fields = {'schema_def', 'messages', 'provider', 'model', 'api_key', 'stream', 'extract_list', 'base_url'}
         dynamic_params = {k: v for k, v in request.model_dump().items() if k not in excluded_fields}
         
         # Test with a simple message

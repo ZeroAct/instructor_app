@@ -29,6 +29,7 @@ export async function validateModel(config: ModelConfig) {
     provider: config.provider,
     model: config.model,
     api_key: config.apiKey,
+    base_url: config.baseUrl,
     stream: false,
     extract_list: false,
   };

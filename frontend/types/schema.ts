@@ -32,9 +32,10 @@ export interface ModelParameter {
 }
 
 export interface ModelConfig {
-  provider: 'openai';
+  provider: 'openai' | 'litellm' | 'ollama';
   model?: string;
   apiKey?: string;
+  baseUrl?: string;
   parameters: ModelParameter[];
 }
 
