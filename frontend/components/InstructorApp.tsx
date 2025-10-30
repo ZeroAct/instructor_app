@@ -14,6 +14,7 @@ const STORAGE_KEYS = {
   SCHEMA: 'instructor_app_schema',
   MODEL_CONFIG: 'instructor_app_model_config',
   PROMPT: 'instructor_app_prompt',
+  PROMPT_PREFIX: 'instructor_app_prompt_prefix',
   EXTRACT_LIST: 'instructor_app_extract_list',
 };
 
@@ -39,13 +40,15 @@ const DEFAULT_MODEL_CONFIG: ModelConfig = {
   ],
 };
 
-const DEFAULT_PROMPT = 'Extract user profile information from the following text: John Doe is a 30 year old software engineer living in San Francisco.';
+const DEFAULT_PROMPT_PREFIX = 'Extract user profile information from the following text:';
+const DEFAULT_PROMPT = 'John Doe is a 30 year old software engineer living in San Francisco.';
 
 export default function InstructorApp() {
   const t = useTranslations();
   const [currentStep, setCurrentStep] = useState(1);
   const [schema, setSchema] = useState<SchemaDefinition>(DEFAULT_SCHEMA);
   const [modelConfig, setModelConfig] = useState<ModelConfig>(DEFAULT_MODEL_CONFIG);
+  const [promptPrefix, setPromptPrefix] = useState(DEFAULT_PROMPT_PREFIX);
   const [prompt, setPrompt] = useState(DEFAULT_PROMPT);
   const [result, setResult] = useState<any>(null);
   const [extractList, setExtractList] = useState(false);
@@ -63,6 +66,11 @@ export default function InstructorApp() {
       const savedModelConfig = localStorage.getItem(STORAGE_KEYS.MODEL_CONFIG);
       if (savedModelConfig) {
         setModelConfig(JSON.parse(savedModelConfig));
+      }
+
+      const savedPromptPrefix = localStorage.getItem(STORAGE_KEYS.PROMPT_PREFIX);
+      if (savedPromptPrefix) {
+        setPromptPrefix(savedPromptPrefix);
       }
 
       const savedPrompt = localStorage.getItem(STORAGE_KEYS.PROMPT);
@@ -99,6 +107,15 @@ export default function InstructorApp() {
       console.error('Error saving model config to localStorage:', error);
     }
   }, [modelConfig, isInitialized]);
+
+  useEffect(() => {
+    if (!isInitialized) return;
+    try {
+      localStorage.setItem(STORAGE_KEYS.PROMPT_PREFIX, promptPrefix);
+    } catch (error) {
+      console.error('Error saving prompt prefix to localStorage:', error);
+    }
+  }, [promptPrefix, isInitialized]);
 
   useEffect(() => {
     if (!isInitialized) return;
@@ -178,6 +195,7 @@ export default function InstructorApp() {
               schema={schema}
               setSchema={setSchema}
               setPrompt={setPrompt}
+              setPromptPrefix={setPromptPrefix}
               onNext={handleNext}
             />
           )}
@@ -185,6 +203,8 @@ export default function InstructorApp() {
             <PromptStep
               prompt={prompt}
               setPrompt={setPrompt}
+              promptPrefix={promptPrefix}
+              setPromptPrefix={setPromptPrefix}
               extractList={extractList}
               setExtractList={setExtractList}
               schema={schema}

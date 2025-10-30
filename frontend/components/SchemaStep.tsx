@@ -9,10 +9,11 @@ interface SchemaStepProps {
   schema: SchemaDefinition;
   setSchema: (schema: SchemaDefinition) => void;
   setPrompt?: (prompt: string) => void;
+  setPromptPrefix?: (prefix: string) => void;
   onNext: () => void;
 }
 
-export default function SchemaStep({ schema, setSchema, setPrompt, onNext }: SchemaStepProps) {
+export default function SchemaStep({ schema, setSchema, setPrompt, setPromptPrefix, onNext }: SchemaStepProps) {
   const t = useTranslations('schemaStep');
   const [validationMessage, setValidationMessage] = useState<string | null>(null);
   const [isValidating, setIsValidating] = useState(false);
@@ -31,7 +32,8 @@ export default function SchemaStep({ schema, setSchema, setPrompt, onNext }: Sch
           { name: 'writer', type: 'str' as const, description: 'Author name', required: true },
         ],
       },
-      prompt: 'Extract article information from the following text: "The Future of AI - Technology section - Published on 2024-01-15 by John Smith. Artificial intelligence continues to transform industries..."',
+      promptPrefix: 'Extract article information from the following text:',
+      prompt: '"The Future of AI - Technology section - Published on 2024-01-15 by John Smith. Artificial intelligence continues to transform industries..."',
     },
     {
       name: 'Stock Analysis',
@@ -43,7 +45,8 @@ export default function SchemaStep({ schema, setSchema, setPrompt, onNext }: Sch
           { name: 'bearish', type: 'bool' as const, description: 'Bearish sentiment indicator', required: true },
         ],
       },
-      prompt: 'Analyze the market sentiment: "The stock showed strong upward momentum with increasing volume. Technical indicators suggest continued growth potential. However, some analysts remain cautious about overvaluation."',
+      promptPrefix: 'Analyze the market sentiment:',
+      prompt: '"The stock showed strong upward momentum with increasing volume. Technical indicators suggest continued growth potential. However, some analysts remain cautious about overvaluation."',
     },
     {
       name: 'Code Variable',
@@ -64,12 +67,16 @@ export default function SchemaStep({ schema, setSchema, setPrompt, onNext }: Sch
           },
         ],
       },
-      prompt: 'Extract variable information from: "let userCount: number = 0; // Tracks the total number of active users in the system"',
+      promptPrefix: 'Extract variable information from:',
+      prompt: '"let userCount: number = 0; // Tracks the total number of active users in the system"',
     },
   ];
 
   const loadExample = (example: typeof presetExamples[0]) => {
     setSchema(example.schema);
+    if (setPromptPrefix) {
+      setPromptPrefix(example.promptPrefix);
+    }
     if (setPrompt) {
       setPrompt(example.prompt);
     }

@@ -8,6 +8,8 @@ import { runCompletion } from '@/lib/api';
 interface PromptStepProps {
   prompt: string;
   setPrompt: (prompt: string) => void;
+  promptPrefix: string;
+  setPromptPrefix: (prefix: string) => void;
   extractList: boolean;
   setExtractList: (value: boolean) => void;
   schema: SchemaDefinition;
@@ -19,6 +21,8 @@ interface PromptStepProps {
 export default function PromptStep({
   prompt,
   setPrompt,
+  promptPrefix,
+  setPromptPrefix,
   extractList,
   setExtractList,
   schema,
@@ -36,10 +40,15 @@ export default function PromptStep({
     setError(null);
 
     try {
+      // Combine prefix and content for the full prompt
+      const fullPrompt = promptPrefix.trim() 
+        ? `${promptPrefix.trim()} ${prompt.trim()}`
+        : prompt.trim();
+
       // Build request with dynamic parameters from config
       const requestParams: any = {
         schema_def: schema,
-        messages: [{ role: 'user', content: prompt }],
+        messages: [{ role: 'user', content: fullPrompt }],
         provider: modelConfig.provider,
         model: modelConfig.model,
         api_key: modelConfig.apiKey,
@@ -75,13 +84,26 @@ export default function PromptStep({
 
       <div>
         <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-          {t('promptLabel')}
+          {t('prefixLabel')}
+        </label>
+        <textarea
+          value={promptPrefix}
+          onChange={(e) => setPromptPrefix(e.target.value)}
+          rows={2}
+          placeholder={t('prefixPlaceholder')}
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent text-sm"
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+          {t('contentLabel')}
         </label>
         <textarea
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
-          rows={8}
-          placeholder={t('promptPlaceholder')}
+          rows={6}
+          placeholder={t('contentPlaceholder')}
           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent font-mono text-sm"
         />
       </div>
