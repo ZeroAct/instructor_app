@@ -98,9 +98,19 @@
     "promptPlaceholder": "在此输入您的提示...",
     "extractList": "提取列表",
     "extractListDesc": "提取匹配模式的多个项目",
+    "showFileUpload": "上传文件",
+    "hideFileUpload": "隐藏文件上传",
     "previous": "上一步",
     "runExtraction": "运行提取",
     "running": "运行中..."
+  },
+  "fileUpload": {
+    "dragDrop": "将文件拖放到此处",
+    "orClick": "或点击浏览",
+    "supportedFormats": "支持：PDF、Word、Excel、图像、文本文件等",
+    "uploading": "上传中...",
+    "uploadSuccess": "文件上传成功",
+    "uploadError": "文件上传失败"
   },
   "resultsStep": {
     "title": "提取结果",

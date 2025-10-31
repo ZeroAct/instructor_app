@@ -98,9 +98,19 @@
     "promptPlaceholder": "여기에 프롬프트를 입력하세요...",
     "extractList": "목록 추출",
     "extractListDesc": "스키마와 일치하는 여러 항목 추출",
+    "showFileUpload": "파일 업로드",
+    "hideFileUpload": "파일 업로드 숨기기",
     "previous": "이전",
     "runExtraction": "추출 실행",
     "running": "실행 중..."
+  },
+  "fileUpload": {
+    "dragDrop": "파일을 여기에 드래그 앤 드롭하세요",
+    "orClick": "또는 클릭하여 찾아보기",
+    "supportedFormats": "지원: PDF, Word, Excel, 이미지, 텍스트 파일 등",
+    "uploading": "업로드 중...",
+    "uploadSuccess": "파일이 성공적으로 업로드되었습니다",
+    "uploadError": "파일 업로드 실패"
   },
   "resultsStep": {
     "title": "추출 결과",
