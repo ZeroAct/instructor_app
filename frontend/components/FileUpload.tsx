@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useRef } from 'react';
 import { useTranslations } from 'next-intl';
+import { API_BASE_URL } from '@/lib/api';
 
 interface FileUploadProps {
   onFileUploaded: (text: string, filename: string) => void;
@@ -39,7 +40,6 @@ export default function FileUpload({ onFileUploaded, disabled = false }: FileUpl
       const formData = new FormData();
       formData.append('file', file);
 
-      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
       const response = await fetch(`${API_BASE_URL}/api/file/upload`, {
         method: 'POST',
         body: formData,

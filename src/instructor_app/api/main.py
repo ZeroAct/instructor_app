@@ -282,11 +282,20 @@ async def get_file_config():
     
     try:
         parser = get_file_parser()
+        
+        # Check if PaddleOCR is available
+        ocr_available = False
+        try:
+            from paddleocr import PaddleOCR  # noqa
+            ocr_available = True
+        except ImportError:
+            pass
+        
         return {
             "enabled": True,
             "max_file_size_mb": parser.config.get("file_upload", {}).get("max_file_size_mb", 10),
             "allowed_extensions": parser.config.get("file_upload", {}).get("allowed_extensions", []),
-            "ocr_available": True,  # Since we're using paddleocr
+            "ocr_available": ocr_available,
         }
     except Exception as e:
         return {

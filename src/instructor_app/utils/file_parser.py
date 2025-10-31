@@ -23,6 +23,11 @@ class FileParser:
         self._docx_available = False
         self._xlsx_available = False
         
+        # Cache imports to avoid repeated overhead
+        self._PyPDF2 = None
+        self._docx = None
+        self._openpyxl = None
+        
         # Check available libraries
         self._check_dependencies()
 
@@ -75,19 +80,22 @@ class FileParser:
     def _check_dependencies(self):
         """Check which optional dependencies are available."""
         try:
-            import PyPDF2  # noqa
+            import PyPDF2
+            self._PyPDF2 = PyPDF2
             self._pdf_available = True
         except ImportError:
             pass
         
         try:
-            import docx  # noqa
+            import docx
+            self._docx = docx
             self._docx_available = True
         except ImportError:
             pass
         
         try:
-            import openpyxl  # noqa
+            import openpyxl
+            self._openpyxl = openpyxl
             self._xlsx_available = True
         except ImportError:
             pass
@@ -158,11 +166,12 @@ class FileParser:
 
     def _parse_image(self, content: bytes) -> str:
         """Parse image file using OCR."""
+        import tempfile
+        
         try:
             ocr = self._get_ocr()
             
-            # Save to temporary file for PaddleOCR
-            import tempfile
+            # Save to temporary file for PaddleOCR using context manager
             with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as tmp:
                 tmp.write(content)
                 tmp_path = tmp.name
@@ -179,9 +188,12 @@ class FileParser:
                 
                 return "\n".join(text_lines) if text_lines else ""
             finally:
-                # Clean up temp file
-                if os.path.exists(tmp_path):
-                    os.unlink(tmp_path)
+                # Clean up temp file - guaranteed to execute
+                try:
+                    if os.path.exists(tmp_path):
+                        os.unlink(tmp_path)
+                except Exception:
+                    pass  # Ignore cleanup errors
                     
         except Exception as e:
             if self.config.get("ocr", {}).get("fallback_to_text", True):
@@ -198,9 +210,7 @@ class FileParser:
             raise ImportError("PyPDF2 is not installed. Install it with: pip install PyPDF2")
         
         try:
-            import PyPDF2
-            
-            pdf_reader = PyPDF2.PdfReader(io.BytesIO(content))
+            pdf_reader = self._PyPDF2.PdfReader(io.BytesIO(content))
             text_parts = []
             
             for page in pdf_reader.pages:
@@ -233,9 +243,7 @@ class FileParser:
             raise ImportError("python-docx is not installed. Install it with: pip install python-docx")
         
         try:
-            import docx
-            
-            doc = docx.Document(io.BytesIO(content))
+            doc = self._docx.Document(io.BytesIO(content))
             paragraphs = [para.text for para in doc.paragraphs if para.text.strip()]
             return "\n\n".join(paragraphs) if paragraphs else "[Empty document]"
             
@@ -252,9 +260,7 @@ class FileParser:
             raise ImportError("openpyxl is not installed. Install it with: pip install openpyxl")
         
         try:
-            import openpyxl
-            
-            workbook = openpyxl.load_workbook(io.BytesIO(content), data_only=True)
+            workbook = self._openpyxl.load_workbook(io.BytesIO(content), data_only=True)
             text_parts = []
             
             for sheet_name in workbook.sheetnames:

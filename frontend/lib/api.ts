@@ -1,6 +1,6 @@
 import { SchemaDefinition, CompletionRequest, CompletionResult, ModelConfig } from '@/types/schema';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 export async function validateSchema(schema: SchemaDefinition) {
   const response = await fetch(`${API_BASE_URL}/api/schema/validate`, {

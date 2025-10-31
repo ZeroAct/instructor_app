@@ -95,14 +95,27 @@ class TestFileUploadAPI:
 
     def test_upload_file_too_large(self):
         """Test uploading file that exceeds size limit."""
-        # Create 11MB file
-        large_content = b"x" * (11 * 1024 * 1024)
-        files = {"file": ("large.txt", BytesIO(large_content), "text/plain")}
+        # Create a smaller test file and mock the size check
+        content = b"x" * 1000  # 1KB file
+        files = {"file": ("large.txt", BytesIO(content), "text/plain")}
         
         with patch.dict(os.environ, {"ENABLE_FILE_UPLOAD": "true"}):
-            response = client.post("/api/file/upload", files=files)
-            assert response.status_code == 400
-            assert "exceeds maximum" in response.json()["detail"]
+            # Mock the config to have a very small max size
+            with patch('instructor_app.utils.file_parser.FileParser._load_config') as mock_config:
+                mock_config.return_value = {
+                    "file_upload": {
+                        "enabled": True,
+                        "max_file_size_mb": 0.0001,  # Very small limit
+                        "allowed_extensions": [".txt"]
+                    },
+                    "ocr": {"fallback_to_text": True},
+                    "text_extraction": {"encoding": "utf-8", "fallback_encodings": []},
+                    "pdf_processing": {}
+                }
+                
+                response = client.post("/api/file/upload", files=files)
+                assert response.status_code == 400
+                assert "exceeds maximum" in response.json()["detail"]
 
     def test_upload_html_file(self):
         """Test uploading HTML file."""
