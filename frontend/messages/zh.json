@@ -1,0 +1,118 @@
+{
+  "header": {
+    "title": "Instructor App",
+    "subtitle": "使用动态模式的结构化 LLM 输出",
+    "settings": "设置"
+  },
+  "steps": {
+    "schema": {
+      "title": "模式",
+      "description": "定义数据结构"
+    },
+    "prompt": {
+      "title": "提示",
+      "description": "输入文本"
+    },
+    "results": {
+      "title": "结果",
+      "description": "查看输出"
+    }
+  },
+  "schemaStep": {
+    "title": "模式定义",
+    "import": "导入",
+    "export": "导出",
+    "examples": "示例",
+    "quickStart": "快速开始：",
+    "quickStartText": "定义您想要从文本中提取的字段。您可以导入现有模式或从头开始构建。",
+    "schemaName": "模式名称",
+    "schemaNamePlaceholder": "例如：UserProfile",
+    "schemaDescription": "模式描述",
+    "schemaDescriptionPlaceholder": "描述您的模式...",
+    "fields": "字段",
+    "addField": "添加字段",
+    "field": "字段",
+    "remove": "移除",
+    "fieldName": "字段名称",
+    "fieldDescription": "描述",
+    "required": "必填",
+    "nestedSchemaName": "嵌套模式名称",
+    "nestedSchemaDescription": "嵌套模式描述",
+    "nestedField": "嵌套字段",
+    "addNestedField": "添加嵌套字段",
+    "validateSchema": "验证模式",
+    "validating": "验证中...",
+    "nextPrompt": "下一步：输入提示",
+    "schemaValid": "模式有效！",
+    "schemaInvalid": "模式验证失败",
+    "importSuccess": "模式导入成功！",
+    "importError": "导入模式失败：无效的 JSON",
+    "types": {
+      "string": "字符串",
+      "integer": "整数",
+      "float": "浮点数",
+      "boolean": "布尔值",
+      "list": "列表",
+      "nested": "对象"
+    }
+  },
+  "promptStep": {
+    "title": "提示输入",
+    "enterText": "输入您的文本：",
+    "enterTextDesc": "提供您想要根据模式提取结构化数据的文本。",
+    "prefixLabel": "指令 / 前缀",
+    "prefixPlaceholder": "例如：从以下文本中提取用户个人资料信息：",
+    "contentLabel": "内容 / 输入文本",
+    "contentPlaceholder": "输入要处理的内容...",
+    "promptLabel": "提示 / 输入文本",
+    "promptPlaceholder": "在此输入您的提示...",
+    "extractList": "提取列表",
+    "extractListDesc": "提取匹配模式的多个项目",
+    "previous": "上一步",
+    "runExtraction": "运行提取",
+    "running": "运行中..."
+  },
+  "resultsStep": {
+    "title": "提取结果",
+    "formatted": "格式化",
+    "rawJson": "原始 JSON",
+    "export": "导出",
+    "previous": "上一步",
+    "startOver": "重新开始",
+    "exportOptions": {
+      "title": "导出结果",
+      "format": "格式",
+      "json": "JSON",
+      "markdown": "Markdown",
+      "fileName": "文件名",
+      "fileNamePlaceholder": "例如：result",
+      "cancel": "取消",
+      "download": "下载"
+    }
+  },
+  "settings": {
+    "title": "模型配置",
+    "provider": "提供商",
+    "model": "模型",
+    "modelPlaceholder": "例如：gpt-4, claude-3-opus-20240229",
+    "apiKey": "API 密钥",
+    "apiKeyPlaceholder": "输入您的 API 密钥",
+    "baseUrl": "基础 URL",
+    "baseUrlPlaceholder": "可选的自定义端点",
+    "parameters": "模型参数",
+    "parameterKey": "参数键",
+    "parameterValue": "值",
+    "addParameter": "添加参数",
+    "validateModel": "验证模型",
+    "validating": "验证中...",
+    "saveClose": "保存并关闭",
+    "close": "关闭",
+    "validationSuccess": "模型配置有效！",
+    "validationError": "验证失败"
+  },
+  "common": {
+    "error": "错误",
+    "loading": "加载中...",
+    "success": "成功"
+  }
+}

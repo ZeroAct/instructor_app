@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { ModelConfig, ModelParameter } from '@/types/schema';
 import { validateModel } from '@/lib/api';
 
@@ -33,6 +34,7 @@ export default function SettingsDialog({
   config,
   setConfig,
 }: SettingsDialogProps) {
+  const t = useTranslations('settings');
   const [localConfig, setLocalConfig] = useState<ModelConfig>(config);
   const [isValidating, setIsValidating] = useState(false);
   const [validationResult, setValidationResult] = useState<{ valid: boolean; message: string } | null>(null);
@@ -133,7 +135,7 @@ export default function SettingsDialog({
         {/* Header */}
         <div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-6 py-4">
           <div className="flex justify-between items-center">
-            <h2 className="text-2xl font-bold">⚙️ Model Settings</h2>
+            <h2 className="text-2xl font-bold">⚙️ {t('title')}</h2>
             <button
               onClick={handleCancel}
               className="text-white hover:text-gray-200 transition"
@@ -149,12 +151,12 @@ export default function SettingsDialog({
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {/* Provider Section */}
           <div className="bg-purple-50 p-4 rounded-lg border-2 border-purple-200">
-            <h3 className="text-lg font-semibold text-gray-900 mb-3">Provider Configuration</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-3">{t('provider')}</h3>
             
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Provider
+                  {t('provider')}
                 </label>
                 <select
                   value={localConfig.provider}
@@ -169,77 +171,41 @@ export default function SettingsDialog({
 
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Base URL (Optional)
+                  {t('baseUrl')}
                 </label>
                 <input
                   type="text"
                   value={localConfig.baseUrl || ''}
                   onChange={(e) => setLocalConfig({ ...localConfig, baseUrl: e.target.value || undefined })}
-                  placeholder={
-                    localConfig.provider === 'ollama' 
-                      ? 'e.g., http://localhost:11434' 
-                      : localConfig.provider === 'litellm'
-                      ? 'e.g., http://localhost:4000'
-                      : 'Leave empty for default'
-                  }
+                  placeholder={t('baseUrlPlaceholder')}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
                 />
-                <p className="mt-1 text-sm text-gray-500">
-                  {localConfig.provider === 'ollama' 
-                    ? 'Default: http://localhost:11434 (will automatically append /v1)' 
-                    : localConfig.provider === 'litellm'
-                    ? 'Default: http://localhost:4000'
-                    : 'Uses default OpenAI endpoint if not provided'
-                  }
-                </p>
               </div>
 
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Model (Optional)
+                  {t('model')}
                 </label>
                 <input
                   type="text"
                   value={localConfig.model || ''}
                   onChange={(e) => setLocalConfig({ ...localConfig, model: e.target.value || undefined })}
-                  placeholder={
-                    localConfig.provider === 'ollama'
-                      ? 'e.g., llama2, mistral'
-                      : localConfig.provider === 'litellm'
-                      ? 'e.g., gpt-4, claude-3-opus'
-                      : 'e.g., gpt-4o-mini'
-                  }
+                  placeholder={t('modelPlaceholder')}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
                 />
-                <p className="mt-1 text-sm text-gray-500">
-                  {localConfig.provider === 'ollama'
-                    ? 'Defaults: llama2 for Ollama'
-                    : localConfig.provider === 'litellm'
-                    ? 'Defaults: depends on LiteLLM config'
-                    : 'Defaults: gpt-4o-mini for OpenAI'
-                  }
-                </p>
               </div>
 
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  API Key (Optional)
+                  {t('apiKey')}
                 </label>
                 <input
                   type="password"
                   value={localConfig.apiKey || ''}
                   onChange={(e) => setLocalConfig({ ...localConfig, apiKey: e.target.value || undefined })}
-                  placeholder="Leave empty to use environment variable"
+                  placeholder={t('apiKeyPlaceholder')}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
                 />
-                <p className="mt-1 text-sm text-gray-500">
-                  {localConfig.provider === 'ollama'
-                    ? 'Optional for Ollama (if authentication is configured)'
-                    : localConfig.provider === 'litellm'
-                    ? 'Uses LITELLM_API_KEY from environment if not provided'
-                    : 'Uses OPENAI_API_KEY from environment if not provided'
-                  }
-                </p>
               </div>
             </div>
           </div>
@@ -247,24 +213,20 @@ export default function SettingsDialog({
           {/* Parameters Section */}
           <div className="bg-blue-50 p-4 rounded-lg border-2 border-blue-200">
             <div className="flex justify-between items-center mb-3">
-              <h3 className="text-lg font-semibold text-gray-900">Model Parameters</h3>
+              <h3 className="text-lg font-semibold text-gray-900">{t('parameters')}</h3>
               <button
                 onClick={handleAddParameter}
                 className="px-3 py-1.5 text-sm bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
               >
-                + Add Parameter
+                + {t('addParameter')}
               </button>
             </div>
-
-            <p className="text-sm text-gray-600 mb-4">
-              Configure provider-specific parameters. Each provider supports different parameters.
-            </p>
 
             <div className="space-y-3 max-h-96 overflow-y-auto">
               {localConfig.parameters.map((param, index) => (
                 <div key={index} className="bg-white p-4 rounded-lg border border-gray-200">
                   <div className="flex justify-between items-start mb-3">
-                    <span className="text-sm font-semibold text-gray-700">Parameter {index + 1}</span>
+                    <span className="text-sm font-semibold text-gray-700">{t('parameterKey')} {index + 1}</span>
                     <button
                       onClick={() => handleRemoveParameter(index)}
                       className="px-2 py-1 text-xs bg-red-100 text-red-700 rounded hover:bg-red-200 transition"
@@ -278,7 +240,7 @@ export default function SettingsDialog({
                       type="text"
                       value={param.key}
                       onChange={(e) => handleParameterChange(index, 'key', e.target.value)}
-                      placeholder="Parameter name"
+                      placeholder={t('parameterKey')}
                       className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent text-sm"
                     />
                     <select
@@ -293,7 +255,7 @@ export default function SettingsDialog({
                       type={param.type === 'number' ? 'number' : 'text'}
                       value={param.value}
                       onChange={(e) => handleParameterChange(index, 'value', e.target.value)}
-                      placeholder="Value"
+                      placeholder={t('parameterValue')}
                       step={param.type === 'number' ? '0.1' : undefined}
                       className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent text-sm"
                     />
@@ -325,7 +287,7 @@ export default function SettingsDialog({
                   : 'bg-green-600 text-white hover:bg-green-700'
               }`}
             >
-              {isValidating ? '🔄 Validating...' : '✓ Validate Model Configuration'}
+              {isValidating ? `🔄 ${t('validating')}` : `✓ ${t('validateModel')}`}
             </button>
 
             {validationResult && (
@@ -335,7 +297,7 @@ export default function SettingsDialog({
                   : 'bg-red-100 border border-red-300 text-red-800'
               }`}>
                 <div className="font-semibold mb-1">
-                  {validationResult.valid ? '✓ Validation Successful' : '✗ Validation Failed'}
+                  {validationResult.valid ? `✓ ${t('validationSuccess')}` : `✗ ${t('validationError')}`}
                 </div>
                 <div className="text-sm">{validationResult.message}</div>
               </div>
@@ -348,7 +310,7 @@ export default function SettingsDialog({
           <div>
             {validationResult?.valid && (
               <span className="text-green-600 text-sm font-semibold">
-                ✓ Model validated - Ready to use
+                ✓ {t('validationSuccess')}
               </span>
             )}
           </div>
@@ -357,13 +319,13 @@ export default function SettingsDialog({
               onClick={handleCancel}
               className="px-6 py-2.5 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition"
             >
-              Cancel
+              {t('close')}
             </button>
             <button
               onClick={handleSave}
               className="px-6 py-2.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
             >
-              Save Settings
+              {t('saveClose')}
             </button>
           </div>
         </div>

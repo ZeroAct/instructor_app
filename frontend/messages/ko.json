@@ -1,0 +1,118 @@
+{
+  "header": {
+    "title": "Instructor App",
+    "subtitle": "동적 스키마를 사용한 구조화된 LLM 출력",
+    "settings": "설정"
+  },
+  "steps": {
+    "schema": {
+      "title": "스키마",
+      "description": "데이터 구조 정의"
+    },
+    "prompt": {
+      "title": "프롬프트",
+      "description": "텍스트 입력"
+    },
+    "results": {
+      "title": "결과",
+      "description": "출력 보기"
+    }
+  },
+  "schemaStep": {
+    "title": "스키마 정의",
+    "import": "가져오기",
+    "export": "내보내기",
+    "examples": "예제",
+    "quickStart": "빠른 시작:",
+    "quickStartText": "텍스트에서 추출할 필드를 정의하세요. 기존 스키마를 가져오거나 처음부터 만들 수 있습니다.",
+    "schemaName": "스키마 이름",
+    "schemaNamePlaceholder": "예: UserProfile",
+    "schemaDescription": "스키마 설명",
+    "schemaDescriptionPlaceholder": "스키마를 설명하세요...",
+    "fields": "필드",
+    "addField": "필드 추가",
+    "field": "필드",
+    "remove": "제거",
+    "fieldName": "필드 이름",
+    "fieldDescription": "설명",
+    "required": "필수",
+    "nestedSchemaName": "중첩 스키마 이름",
+    "nestedSchemaDescription": "중첩 스키마 설명",
+    "nestedField": "중첩 필드",
+    "addNestedField": "중첩 필드 추가",
+    "validateSchema": "스키마 검증",
+    "validating": "검증 중...",
+    "nextPrompt": "다음: 프롬프트 입력",
+    "schemaValid": "스키마가 유효합니다!",
+    "schemaInvalid": "스키마 검증 실패",
+    "importSuccess": "스키마를 성공적으로 가져왔습니다!",
+    "importError": "스키마 가져오기 실패: 유효하지 않은 JSON",
+    "types": {
+      "string": "문자열",
+      "integer": "정수",
+      "float": "실수",
+      "boolean": "부울",
+      "list": "목록",
+      "nested": "객체"
+    }
+  },
+  "promptStep": {
+    "title": "프롬프트 입력",
+    "enterText": "텍스트를 입력하세요:",
+    "enterTextDesc": "스키마를 기반으로 구조화된 데이터를 추출할 텍스트를 제공하세요.",
+    "prefixLabel": "지시사항 / 접두사",
+    "prefixPlaceholder": "예: 다음 텍스트에서 사용자 프로필 정보를 추출하세요:",
+    "contentLabel": "내용 / 입력 텍스트",
+    "contentPlaceholder": "처리할 내용을 입력하세요...",
+    "promptLabel": "프롬프트 / 입력 텍스트",
+    "promptPlaceholder": "여기에 프롬프트를 입력하세요...",
+    "extractList": "목록 추출",
+    "extractListDesc": "스키마와 일치하는 여러 항목 추출",
+    "previous": "이전",
+    "runExtraction": "추출 실행",
+    "running": "실행 중..."
+  },
+  "resultsStep": {
+    "title": "추출 결과",
+    "formatted": "포맷됨",
+    "rawJson": "원본 JSON",
+    "export": "내보내기",
+    "previous": "이전",
+    "startOver": "처음부터 시작",
+    "exportOptions": {
+      "title": "결과 내보내기",
+      "format": "형식",
+      "json": "JSON",
+      "markdown": "마크다운",
+      "fileName": "파일 이름",
+      "fileNamePlaceholder": "예: result",
+      "cancel": "취소",
+      "download": "다운로드"
+    }
+  },
+  "settings": {
+    "title": "모델 구성",
+    "provider": "제공자",
+    "model": "모델",
+    "modelPlaceholder": "예: gpt-4, claude-3-opus-20240229",
+    "apiKey": "API 키",
+    "apiKeyPlaceholder": "API 키를 입력하세요",
+    "baseUrl": "기본 URL",
+    "baseUrlPlaceholder": "선택적 사용자 정의 엔드포인트",
+    "parameters": "모델 매개변수",
+    "parameterKey": "매개변수 키",
+    "parameterValue": "값",
+    "addParameter": "매개변수 추가",
+    "validateModel": "모델 검증",
+    "validating": "검증 중...",
+    "saveClose": "저장 & 닫기",
+    "close": "닫기",
+    "validationSuccess": "모델 구성이 유효합니다!",
+    "validationError": "검증 실패"
+  },
+  "common": {
+    "error": "오류",
+    "loading": "로딩 중...",
+    "success": "성공"
+  }
+}

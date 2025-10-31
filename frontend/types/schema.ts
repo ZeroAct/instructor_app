@@ -1,22 +1,9 @@
 export interface SchemaField {
   name: string;
-  type: 'str' | 'int' | 'float' | 'bool' | 'list' | 'nested';
+  type: 'str' | 'int' | 'float' | 'bool' | 'list' | 'object';
   description: string;
   required: boolean;
-  nested_schema?: NestedSchema;
-}
-
-export interface NestedSchema {
-  name: string;
-  description: string;
-  fields: NestedSchemaField[];
-}
-
-export interface NestedSchemaField {
-  name: string;
-  type: 'str' | 'int' | 'float' | 'bool' | 'list';
-  description: string;
-  required: boolean;
+  fields?: SchemaField[];
 }
 
 export interface SchemaDefinition {

@@ -1,0 +1,118 @@
+{
+  "header": {
+    "title": "Instructor App",
+    "subtitle": "Structured LLM Outputs with Dynamic Schemas",
+    "settings": "Settings"
+  },
+  "steps": {
+    "schema": {
+      "title": "Schema",
+      "description": "Define data structure"
+    },
+    "prompt": {
+      "title": "Prompt",
+      "description": "Input text"
+    },
+    "results": {
+      "title": "Results",
+      "description": "View output"
+    }
+  },
+  "schemaStep": {
+    "title": "Schema Definition",
+    "import": "Import",
+    "export": "Export",
+    "examples": "Examples",
+    "quickStart": "Quick Start:",
+    "quickStartText": "Define the fields you want to extract from your text. You can import an existing schema or build one from scratch.",
+    "schemaName": "Schema Name",
+    "schemaNamePlaceholder": "e.g., UserProfile",
+    "schemaDescription": "Schema Description",
+    "schemaDescriptionPlaceholder": "Describe your schema...",
+    "fields": "Fields",
+    "addField": "Add Field",
+    "field": "Field",
+    "remove": "Remove",
+    "fieldName": "Field name",
+    "fieldDescription": "Description",
+    "required": "Required",
+    "nestedSchemaName": "Nested schema name",
+    "nestedSchemaDescription": "Nested schema description",
+    "nestedField": "Nested Field",
+    "addNestedField": "Add Nested Field",
+    "validateSchema": "Validate Schema",
+    "validating": "Validating...",
+    "nextPrompt": "Next: Enter Prompt",
+    "schemaValid": "Schema is valid!",
+    "schemaInvalid": "Schema validation failed",
+    "importSuccess": "Schema imported successfully!",
+    "importError": "Failed to import schema: Invalid JSON",
+    "types": {
+      "string": "String",
+      "integer": "Integer",
+      "float": "Float",
+      "boolean": "Boolean",
+      "list": "List",
+      "nested": "Object"
+    }
+  },
+  "promptStep": {
+    "title": "Prompt Input",
+    "enterText": "Enter your text:",
+    "enterTextDesc": "Provide the text from which you want to extract structured data based on your schema.",
+    "prefixLabel": "Instruction / Prefix",
+    "prefixPlaceholder": "e.g., Extract user profile information from the following text:",
+    "contentLabel": "Content / Input Text",
+    "contentPlaceholder": "Enter the content to process...",
+    "promptLabel": "Prompt / Input Text",
+    "promptPlaceholder": "Enter your prompt here...",
+    "extractList": "Extract List",
+    "extractListDesc": "Extract multiple items matching the schema",
+    "previous": "Previous",
+    "runExtraction": "Run Extraction",
+    "running": "Running..."
+  },
+  "resultsStep": {
+    "title": "Extraction Results",
+    "formatted": "Formatted",
+    "rawJson": "Raw JSON",
+    "export": "Export",
+    "previous": "Previous",
+    "startOver": "Start Over",
+    "exportOptions": {
+      "title": "Export Result",
+      "format": "Format",
+      "json": "JSON",
+      "markdown": "Markdown",
+      "fileName": "File Name",
+      "fileNamePlaceholder": "e.g., result",
+      "cancel": "Cancel",
+      "download": "Download"
+    }
+  },
+  "settings": {
+    "title": "Model Configuration",
+    "provider": "Provider",
+    "model": "Model",
+    "modelPlaceholder": "e.g., gpt-4, claude-3-opus-20240229",
+    "apiKey": "API Key",
+    "apiKeyPlaceholder": "Enter your API key",
+    "baseUrl": "Base URL",
+    "baseUrlPlaceholder": "Optional custom endpoint",
+    "parameters": "Model Parameters",
+    "parameterKey": "Parameter Key",
+    "parameterValue": "Value",
+    "addParameter": "Add Parameter",
+    "validateModel": "Validate Model",
+    "validating": "Validating...",
+    "saveClose": "Save & Close",
+    "close": "Close",
+    "validationSuccess": "Model configuration is valid!",
+    "validationError": "Validation failed"
+  },
+  "common": {
+    "error": "Error",
+    "loading": "Loading...",
+    "success": "Success"
+  }
+}

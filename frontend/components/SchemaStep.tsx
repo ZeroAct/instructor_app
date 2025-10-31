@@ -1,18 +1,87 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { SchemaDefinition, SchemaField } from '@/types/schema';
 import { validateSchema } from '@/lib/api';
 
 interface SchemaStepProps {
   schema: SchemaDefinition;
   setSchema: (schema: SchemaDefinition) => void;
+  setPrompt?: (prompt: string) => void;
+  setPromptPrefix?: (prefix: string) => void;
   onNext: () => void;
 }
 
-export default function SchemaStep({ schema, setSchema, onNext }: SchemaStepProps) {
+export default function SchemaStep({ schema, setSchema, setPrompt, setPromptPrefix, onNext }: SchemaStepProps) {
+  const t = useTranslations('schemaStep');
   const [validationMessage, setValidationMessage] = useState<string | null>(null);
   const [isValidating, setIsValidating] = useState(false);
+  const [showExamples, setShowExamples] = useState(false);
+
+  const presetExamples = [
+    {
+      name: 'Article',
+      schema: {
+        name: 'Article',
+        description: 'Extract article metadata',
+        fields: [
+          { name: 'title', type: 'str' as const, description: 'Article title', required: true },
+          { name: 'subject', type: 'str' as const, description: 'Subject or category', required: true },
+          { name: 'date', type: 'str' as const, description: 'Publication date', required: true },
+          { name: 'writer', type: 'str' as const, description: 'Author name', required: true },
+        ],
+      },
+      promptPrefix: 'Extract article information from the following text:',
+      prompt: '"The Future of AI - Technology section - Published on 2024-01-15 by John Smith. Artificial intelligence continues to transform industries..."',
+    },
+    {
+      name: 'Stock Analysis',
+      schema: {
+        name: 'StockAnalysis',
+        description: 'Stock market sentiment analysis',
+        fields: [
+          { name: 'bullish', type: 'bool' as const, description: 'Bullish sentiment indicator', required: true },
+          { name: 'bearish', type: 'bool' as const, description: 'Bearish sentiment indicator', required: true },
+        ],
+      },
+      promptPrefix: 'Analyze the market sentiment:',
+      prompt: '"The stock showed strong upward momentum with increasing volume. Technical indicators suggest continued growth potential. However, some analysts remain cautious about overvaluation."',
+    },
+    {
+      name: 'Code Variable',
+      schema: {
+        name: 'CodeVariable',
+        description: 'Extract code variable information',
+        fields: [
+          {
+            name: 'variable',
+            type: 'object' as const,
+            description: 'Variable details',
+            required: true,
+            fields: [
+              { name: 'name', type: 'str' as const, description: 'Variable name', required: true },
+              { name: 'data_type', type: 'str' as const, description: 'Data type', required: true },
+              { name: 'description', type: 'str' as const, description: 'Variable description', required: true },
+            ],
+          },
+        ],
+      },
+      promptPrefix: 'Extract variable information from:',
+      prompt: '"let userCount: number = 0; // Tracks the total number of active users in the system"',
+    },
+  ];
+
+  const loadExample = (example: typeof presetExamples[0]) => {
+    setSchema(example.schema);
+    if (setPromptPrefix) {
+      setPromptPrefix(example.promptPrefix);
+    }
+    if (setPrompt) {
+      setPrompt(example.prompt);
+    }
+    setShowExamples(false);
+  };
 
   const addField = () => {
     setSchema({
@@ -39,48 +108,36 @@ export default function SchemaStep({ schema, setSchema, onNext }: SchemaStepProp
 
   const addNestedField = (parentIndex: number) => {
     const field = schema.fields[parentIndex];
-    if (!field.nested_schema) {
-      field.nested_schema = {
-        name: `${field.name || 'Nested'}Schema`,
-        description: '',
-        fields: [],
-      };
+    if (!field.fields) {
+      field.fields = [];
     }
     
-    field.nested_schema.fields.push({
+    field.fields.push({
       name: '',
       type: 'str',
       description: '',
       required: true,
     });
     
-    updateField(parentIndex, { nested_schema: field.nested_schema });
+    updateField(parentIndex, { fields: field.fields });
   };
 
   const removeNestedField = (parentIndex: number, nestedIndex: number) => {
     const field = schema.fields[parentIndex];
-    if (field.nested_schema) {
-      field.nested_schema.fields = field.nested_schema.fields.filter((_, i) => i !== nestedIndex);
-      updateField(parentIndex, { nested_schema: field.nested_schema });
+    if (field.fields) {
+      field.fields = field.fields.filter((_, i) => i !== nestedIndex);
+      updateField(parentIndex, { fields: field.fields });
     }
   };
 
   const updateNestedField = (parentIndex: number, nestedIndex: number, updates: any) => {
     const field = schema.fields[parentIndex];
-    if (field.nested_schema) {
-      field.nested_schema.fields[nestedIndex] = {
-        ...field.nested_schema.fields[nestedIndex],
+    if (field.fields) {
+      field.fields[nestedIndex] = {
+        ...field.fields[nestedIndex],
         ...updates,
       };
-      updateField(parentIndex, { nested_schema: field.nested_schema });
-    }
-  };
-
-  const updateNestedSchemaInfo = (parentIndex: number, updates: { name?: string; description?: string }) => {
-    const field = schema.fields[parentIndex];
-    if (field.nested_schema) {
-      field.nested_schema = { ...field.nested_schema, ...updates };
-      updateField(parentIndex, { nested_schema: field.nested_schema });
+      updateField(parentIndex, { fields: field.fields });
     }
   };
 
@@ -89,7 +146,7 @@ export default function SchemaStep({ schema, setSchema, onNext }: SchemaStepProp
     setValidationMessage(null);
     try {
       await validateSchema(schema);
-      setValidationMessage('✓ Schema is valid!');
+      setValidationMessage(`✓ ${t('schemaValid')}`);
     } catch (error: any) {
       setValidationMessage(`✗ ${error.message}`);
     } finally {
@@ -116,9 +173,9 @@ export default function SchemaStep({ schema, setSchema, onNext }: SchemaStepProp
         try {
           const imported = JSON.parse(e.target?.result as string);
           setSchema(imported);
-          setValidationMessage('✓ Schema imported successfully!');
-        } catch (error) {
-          setValidationMessage('✗ Failed to import schema: Invalid JSON');
+          setValidationMessage(`✓ ${t('importSuccess')}`);
+        } catch {
+          setValidationMessage(`✗ ${t('importError')}`);
         }
       };
       reader.readAsText(file);
@@ -128,10 +185,16 @@ export default function SchemaStep({ schema, setSchema, onNext }: SchemaStepProp
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h2 className="text-xl font-bold text-gray-900">📋 Schema Definition</h2>
+        <h2 className="text-xl font-bold text-gray-900">📋 {t('title')}</h2>
         <div className="flex gap-2">
+          <button
+            onClick={() => setShowExamples(!showExamples)}
+            className="px-3 py-1.5 text-sm bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition"
+          >
+            💡 {t('examples')}
+          </button>
           <label className="px-3 py-1.5 text-sm bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition cursor-pointer">
-            📥 Import
+            📥 {t('import')}
             <input
               type="file"
               accept=".json"
@@ -143,52 +206,82 @@ export default function SchemaStep({ schema, setSchema, onNext }: SchemaStepProp
             onClick={handleExport}
             className="px-3 py-1.5 text-sm bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition"
           >
-            📤 Export
+            📤 {t('export')}
           </button>
         </div>
       </div>
 
+      {/* Examples Modal */}
+      {showExamples && (
+        <div className="bg-gradient-to-r from-green-50 to-blue-50 border-2 border-green-300 rounded-lg p-4">
+          <div className="flex justify-between items-center mb-3">
+            <h3 className="text-lg font-semibold text-gray-900">📚 Preset Examples</h3>
+            <button
+              onClick={() => setShowExamples(false)}
+              className="text-gray-500 hover:text-gray-700"
+            >
+              ✕
+            </button>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {presetExamples.map((example, index) => (
+              <button
+                key={index}
+                onClick={() => loadExample(example)}
+                className="text-left p-4 bg-white rounded-lg border-2 border-gray-200 hover:border-green-400 hover:shadow-md transition"
+              >
+                <div className="font-semibold text-purple-700 mb-2">{example.name}</div>
+                <div className="text-xs text-gray-600 mb-2">{example.schema.description}</div>
+                <div className="text-xs text-gray-500">
+                  {example.schema.fields.length} field{example.schema.fields.length !== 1 ? 's' : ''}
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="bg-blue-50 border-l-4 border-purple-600 p-3 rounded">
         <p className="text-sm text-gray-700">
-          <strong className="text-purple-600">Quick Start:</strong> Define the fields you want to extract from your text. You can import an existing schema or build one from scratch.
+          <strong className="text-purple-600">{t('quickStart')}</strong> {t('quickStartText')}
         </p>
       </div>
 
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-            Schema Name
+            {t('schemaName')}
           </label>
           <input
             type="text"
             value={schema.name}
             onChange={(e) => setSchema({ ...schema, name: e.target.value })}
             className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
-            placeholder="e.g., UserProfile"
+            placeholder={t('schemaNamePlaceholder')}
           />
         </div>
         <div>
           <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-            Schema Description
+            {t('schemaDescription')}
           </label>
           <input
             type="text"
             value={schema.description}
             onChange={(e) => setSchema({ ...schema, description: e.target.value })}
             className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
-            placeholder="Describe your schema..."
+            placeholder={t('schemaDescriptionPlaceholder')}
           />
         </div>
       </div>
 
       <div>
         <div className="flex justify-between items-center mb-2">
-          <label className="block text-sm font-semibold text-gray-700">Fields</label>
+          <label className="block text-sm font-semibold text-gray-700">{t('fields')}</label>
           <button
             onClick={addField}
             className="px-3 py-1 text-sm bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
           >
-            + Add Field
+            + {t('addField')}
           </button>
         </div>
 
@@ -196,12 +289,12 @@ export default function SchemaStep({ schema, setSchema, onNext }: SchemaStepProp
           {schema.fields.map((field, index) => (
             <div key={index} className="bg-gray-50 p-3 rounded-lg border border-gray-200">
               <div className="flex justify-between items-start mb-2">
-                <span className="font-semibold text-sm text-gray-700">Field {index + 1}</span>
+                <span className="font-semibold text-sm text-gray-700">{t('field')} {index + 1}</span>
                 <button
                   onClick={() => removeField(index)}
                   className="px-2 py-0.5 text-xs bg-red-100 text-red-700 rounded hover:bg-red-200 transition"
                 >
-                  Remove
+                  {t('remove')}
                 </button>
               </div>
               <div className="grid grid-cols-3 gap-2">
@@ -209,21 +302,17 @@ export default function SchemaStep({ schema, setSchema, onNext }: SchemaStepProp
                   type="text"
                   value={field.name}
                   onChange={(e) => updateField(index, { name: e.target.value })}
-                  placeholder="Field name"
+                  placeholder={t('fieldName')}
                   className="px-2 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent text-sm"
                 />
                 <select
                   value={field.type}
                   onChange={(e) => {
                     const newType = e.target.value as any;
-                    if (newType === 'nested' && !field.nested_schema) {
+                    if (newType === 'object' && !field.fields) {
                       updateField(index, { 
                         type: newType,
-                        nested_schema: {
-                          name: `${field.name || 'Nested'}Schema`,
-                          description: '',
-                          fields: [],
-                        }
+                        fields: []
                       });
                     } else {
                       updateField(index, { type: newType });
@@ -231,18 +320,18 @@ export default function SchemaStep({ schema, setSchema, onNext }: SchemaStepProp
                   }}
                   className="px-2 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent text-sm"
                 >
-                  <option value="str">String</option>
-                  <option value="int">Integer</option>
-                  <option value="float">Float</option>
-                  <option value="bool">Boolean</option>
-                  <option value="list">List</option>
-                  <option value="nested">Nested Schema</option>
+                  <option value="str">{t('types.string')}</option>
+                  <option value="int">{t('types.integer')}</option>
+                  <option value="float">{t('types.float')}</option>
+                  <option value="bool">{t('types.boolean')}</option>
+                  <option value="list">{t('types.list')}</option>
+                  <option value="object">{t('types.nested')}</option>
                 </select>
                 <input
                   type="text"
                   value={field.description}
                   onChange={(e) => updateField(index, { description: e.target.value })}
-                  placeholder="Description"
+                  placeholder={t('fieldDescription')}
                   className="px-2 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent text-sm"
                 />
               </div>
@@ -254,43 +343,26 @@ export default function SchemaStep({ schema, setSchema, onNext }: SchemaStepProp
                     onChange={(e) => updateField(index, { required: e.target.checked })}
                     className="mr-2 h-3.5 w-3.5 text-purple-600 border-gray-300 rounded focus:ring-purple-600"
                   />
-                  <span className="text-sm text-gray-700">Required</span>
+                  <span className="text-sm text-gray-700">{t('required')}</span>
                 </label>
               </div>
 
               {/* Nested Schema Section */}
-              {field.type === 'nested' && (
+              {field.type === 'object' && (
                 <div className="mt-2 p-2.5 bg-purple-50 border-2 border-dashed border-purple-300 rounded-lg">
-                  <div className="mb-2">
-                    <input
-                      type="text"
-                      value={field.nested_schema?.name || ''}
-                      onChange={(e) => updateNestedSchemaInfo(index, { name: e.target.value })}
-                      placeholder="Nested schema name"
-                      className="w-full px-2 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent text-sm font-semibold mb-1.5"
-                    />
-                    <input
-                      type="text"
-                      value={field.nested_schema?.description || ''}
-                      onChange={(e) => updateNestedSchemaInfo(index, { description: e.target.value })}
-                      placeholder="Nested schema description"
-                      className="w-full px-2 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent text-sm"
-                    />
-                  </div>
-
                   <div className="space-y-1.5 mb-2">
-                    {field.nested_schema?.fields.map((nestedField, nestedIndex) => (
+                    {field.fields?.map((nestedField, nestedIndex) => (
                       <div key={nestedIndex} className="bg-white p-2 rounded border border-gray-200">
                         <div className="flex justify-between items-center mb-1.5">
                           <span className="text-xs font-semibold text-gray-600">
-                            Nested Field {nestedIndex + 1}
+                            {t('nestedField')} {nestedIndex + 1}
                           </span>
                           <button
                             type="button"
                             onClick={() => removeNestedField(index, nestedIndex)}
                             className="px-1.5 py-0.5 text-xs bg-red-100 text-red-700 rounded hover:bg-red-200 transition"
                           >
-                            Remove
+                            {t('remove')}
                           </button>
                         </div>
                         <div className="grid grid-cols-3 gap-1.5 mb-1.5">
@@ -298,7 +370,7 @@ export default function SchemaStep({ schema, setSchema, onNext }: SchemaStepProp
                             type="text"
                             value={nestedField.name}
                             onChange={(e) => updateNestedField(index, nestedIndex, { name: e.target.value })}
-                            placeholder="Field name"
+                            placeholder={t('fieldName')}
                             className="px-2 py-1 border border-gray-300 rounded text-xs focus:ring-2 focus:ring-purple-600 focus:border-transparent"
                           />
                           <select
@@ -306,17 +378,17 @@ export default function SchemaStep({ schema, setSchema, onNext }: SchemaStepProp
                             onChange={(e) => updateNestedField(index, nestedIndex, { type: e.target.value })}
                             className="px-2 py-1 border border-gray-300 rounded text-xs focus:ring-2 focus:ring-purple-600 focus:border-transparent"
                           >
-                            <option value="str">String</option>
-                            <option value="int">Integer</option>
-                            <option value="float">Float</option>
-                            <option value="bool">Boolean</option>
-                            <option value="list">List</option>
+                            <option value="str">{t('types.string')}</option>
+                            <option value="int">{t('types.integer')}</option>
+                            <option value="float">{t('types.float')}</option>
+                            <option value="bool">{t('types.boolean')}</option>
+                            <option value="list">{t('types.list')}</option>
                           </select>
                           <input
                             type="text"
                             value={nestedField.description}
                             onChange={(e) => updateNestedField(index, nestedIndex, { description: e.target.value })}
-                            placeholder="Description"
+                            placeholder={t('fieldDescription')}
                             className="px-2 py-1 border border-gray-300 rounded text-xs focus:ring-2 focus:ring-purple-600 focus:border-transparent"
                           />
                         </div>
@@ -327,7 +399,7 @@ export default function SchemaStep({ schema, setSchema, onNext }: SchemaStepProp
                             onChange={(e) => updateNestedField(index, nestedIndex, { required: e.target.checked })}
                             className="mr-1.5 h-3 w-3 text-purple-600 border-gray-300 rounded focus:ring-purple-600"
                           />
-                          <span className="text-xs text-gray-700">Required</span>
+                          <span className="text-xs text-gray-700">{t('required')}</span>
                         </label>
                       </div>
                     ))}
@@ -338,7 +410,7 @@ export default function SchemaStep({ schema, setSchema, onNext }: SchemaStepProp
                     onClick={() => addNestedField(index)}
                     className="px-2.5 py-1 text-xs bg-purple-600 text-white rounded hover:bg-purple-700 transition"
                   >
-                    + Add Nested Field
+                    + {t('addNestedField')}
                   </button>
                 </div>
               )}
@@ -365,13 +437,13 @@ export default function SchemaStep({ schema, setSchema, onNext }: SchemaStepProp
           disabled={isValidating}
           className="px-4 py-2 text-sm bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition disabled:opacity-50"
         >
-          {isValidating ? 'Validating...' : 'Validate Schema'}
+          {isValidating ? t('validating') : t('validateSchema')}
         </button>
         <button
           onClick={onNext}
           className="px-4 py-2 text-sm bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
         >
-          Next: Enter Prompt →
+          {t('nextPrompt')} →
         </button>
       </div>
     </div>
