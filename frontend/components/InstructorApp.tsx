@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { SchemaDefinition, ModelConfig } from '@/types/schema';
 import StepIndicator from './StepIndicator';
+import ModelConfigStep from './ModelConfigStep';
 import SchemaStep from './SchemaStep';
 import PromptStep from './PromptStep';
 import ResultsStep from './ResultsStep';
@@ -45,7 +46,7 @@ const DEFAULT_PROMPT = 'John Doe is a 30 year old software engineer living in Sa
 
 export default function InstructorApp() {
   const t = useTranslations();
-  const [currentStep, setCurrentStep] = useState(1);
+  const [currentStep, setCurrentStep] = useState(0);
   const [schema, setSchema] = useState<SchemaDefinition>(DEFAULT_SCHEMA);
   const [modelConfig, setModelConfig] = useState<ModelConfig>(DEFAULT_MODEL_CONFIG);
   const [promptPrefix, setPromptPrefix] = useState(DEFAULT_PROMPT_PREFIX);
@@ -136,6 +137,7 @@ export default function InstructorApp() {
   }, [extractList, isInitialized]);
 
   const steps = [
+    { number: 0, title: t('steps.modelConfig.title'), description: t('steps.modelConfig.description') },
     { number: 1, title: t('steps.schema.title'), description: t('steps.schema.description') },
     { number: 2, title: t('steps.prompt.title'), description: t('steps.prompt.description') },
     { number: 3, title: t('steps.results.title'), description: t('steps.results.description') },
@@ -146,7 +148,7 @@ export default function InstructorApp() {
   };
 
   const handlePrevious = () => {
-    if (currentStep > 1) setCurrentStep(currentStep - 1);
+    if (currentStep > 0) setCurrentStep(currentStep - 1);
   };
 
   return (
@@ -214,6 +216,13 @@ export default function InstructorApp() {
       {/* Main Content - Wide View */}
       <div className="container mx-auto px-4 pb-8">
         <div className="bg-white rounded-2xl shadow-xl p-6">
+          {currentStep === 0 && (
+            <ModelConfigStep
+              config={modelConfig}
+              setConfig={setModelConfig}
+              onNext={handleNext}
+            />
+          )}
           {currentStep === 1 && (
             <SchemaStep
               schema={schema}
@@ -221,6 +230,7 @@ export default function InstructorApp() {
               setPrompt={setPrompt}
               setPromptPrefix={setPromptPrefix}
               onNext={handleNext}
+              onPrevious={handlePrevious}
             />
           )}
           {currentStep === 2 && (
@@ -246,7 +256,7 @@ export default function InstructorApp() {
               schema={schema}
               onPrevious={handlePrevious}
               onReset={() => {
-                setCurrentStep(1);
+                setCurrentStep(0);
                 setResult(null);
               }}
             />
