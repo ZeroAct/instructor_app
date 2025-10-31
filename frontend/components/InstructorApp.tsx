@@ -51,7 +51,7 @@ export default function InstructorApp() {
   const [promptPrefix, setPromptPrefix] = useState(DEFAULT_PROMPT_PREFIX);
   const [prompt, setPrompt] = useState(DEFAULT_PROMPT);
   const [result, setResult] = useState<any>(null);
-  const [extractList, setExtractList] = useState(false);
+  const [extractList, setExtractList] = useState(true);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
 

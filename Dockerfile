@@ -8,7 +8,7 @@ WORKDIR /app
 RUN pip install --no-cache-dir uv
 
 # Copy project files
-COPY pyproject.toml .python-version ./
+COPY pyproject.toml .python-version README.md ./
 COPY main.py ./
 COPY src/ ./src/
 
