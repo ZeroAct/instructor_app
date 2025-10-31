@@ -201,6 +201,46 @@ class TestFileParser:
             result = parser.parse_file(content, "test.xml")
             assert "Text content" in result
 
+    def test_parse_pdf_without_library(self):
+        """Test that PDF files return helpful message when PyPDF2 is not available."""
+        parser = FileParser()
+        parser._pdf_available = False
+        
+        content = b"%PDF-1.4\n<<\n/Filter/FlateDecode>>stream\nBinary\xc3\x9b data"
+        
+        with patch.dict(os.environ, {"ENABLE_FILE_UPLOAD": "true"}):
+            result = parser.parse_file(content, "test.pdf")
+            assert "PyPDF2 is not installed" in result
+            # Should NOT contain binary/unreadable characters
+            assert "\xc3" not in result
+            assert "\x9b" not in result
+
+    def test_parse_docx_without_library(self):
+        """Test that DOCX files return helpful message when python-docx is not available."""
+        parser = FileParser()
+        parser._docx_available = False
+        
+        content = b"PK\x03\x04\x14\x00\x06\x00\x08\x00"  # ZIP header
+        
+        with patch.dict(os.environ, {"ENABLE_FILE_UPLOAD": "true"}):
+            result = parser.parse_file(content, "test.docx")
+            assert "python-docx is not installed" in result
+            # Should NOT contain binary/unreadable characters
+            assert "PK\x03\x04" not in result
+
+    def test_parse_xlsx_without_library(self):
+        """Test that Excel files return helpful message when openpyxl is not available."""
+        parser = FileParser()
+        parser._xlsx_available = False
+        
+        content = b"PK\x03\x04\x14\x00\x06\x00\x08\x00"  # ZIP header
+        
+        with patch.dict(os.environ, {"ENABLE_FILE_UPLOAD": "true"}):
+            result = parser.parse_file(content, "test.xlsx")
+            assert "openpyxl is not installed" in result
+            # Should NOT contain binary/unreadable characters
+            assert "PK\x03\x04" not in result
+
 
 class TestFileParserIntegration:
     """Integration tests for file parser."""

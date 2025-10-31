@@ -204,10 +204,8 @@ class FileParser:
     def _parse_pdf(self, content: bytes) -> str:
         """Parse PDF file."""
         if not self._pdf_available:
-            # Try to extract as text
-            if self.config.get("ocr", {}).get("fallback_to_text", True):
-                return self._parse_text(content)
-            raise ImportError("PyPDF2 is not installed. Install it with: pip install PyPDF2")
+            # Don't fallback to text parsing for binary PDF files
+            return "[PDF file detected but PyPDF2 is not installed. Install it with: pip install PyPDF2]"
         
         try:
             pdf_reader = self._PyPDF2.PdfReader(io.BytesIO(content))
@@ -231,16 +229,14 @@ class FileParser:
             return extracted_text if extracted_text.strip() else "[Empty PDF]"
             
         except Exception as e:
-            if self.config.get("ocr", {}).get("fallback_to_text", True):
-                return f"[PDF parsing failed: {str(e)}]"
-            raise
+            # Return error message instead of fallback to text parsing
+            return f"[PDF parsing failed: {str(e)}. The file may be corrupted or password-protected.]"
 
     def _parse_docx(self, content: bytes) -> str:
         """Parse DOCX file."""
         if not self._docx_available:
-            if self.config.get("ocr", {}).get("fallback_to_text", True):
-                return self._parse_text(content)
-            raise ImportError("python-docx is not installed. Install it with: pip install python-docx")
+            # Don't fallback to text parsing for binary DOCX files
+            return "[DOCX file detected but python-docx is not installed. Install it with: pip install python-docx]"
         
         try:
             doc = self._docx.Document(io.BytesIO(content))
@@ -248,16 +244,14 @@ class FileParser:
             return "\n\n".join(paragraphs) if paragraphs else "[Empty document]"
             
         except Exception as e:
-            if self.config.get("ocr", {}).get("fallback_to_text", True):
-                return f"[DOCX parsing failed: {str(e)}]"
-            raise
+            # Return error message instead of fallback to text parsing
+            return f"[DOCX parsing failed: {str(e)}. The file may be corrupted or in an unsupported format.]"
 
     def _parse_xlsx(self, content: bytes) -> str:
         """Parse Excel file."""
         if not self._xlsx_available:
-            if self.config.get("ocr", {}).get("fallback_to_text", True):
-                return self._parse_text(content)
-            raise ImportError("openpyxl is not installed. Install it with: pip install openpyxl")
+            # Don't fallback to text parsing for binary Excel files
+            return "[Excel file detected but openpyxl is not installed. Install it with: pip install openpyxl]"
         
         try:
             workbook = self._openpyxl.load_workbook(io.BytesIO(content), data_only=True)
@@ -277,9 +271,8 @@ class FileParser:
             return "\n".join(text_parts) if text_parts else "[Empty spreadsheet]"
             
         except Exception as e:
-            if self.config.get("ocr", {}).get("fallback_to_text", True):
-                return f"[Excel parsing failed: {str(e)}]"
-            raise
+            # Return error message instead of fallback to text parsing
+            return f"[Excel parsing failed: {str(e)}. The file may be corrupted or in an unsupported format.]"
 
     def _parse_csv(self, content: bytes) -> str:
         """Parse CSV file."""

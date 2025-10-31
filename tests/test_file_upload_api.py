@@ -212,6 +212,37 @@ class TestFileUploadAPI:
                 assert response.status_code == 200
                 assert response.json()["success"] is True
 
+    def test_upload_pdf_without_library(self):
+        """Test uploading PDF when PyPDF2 is not installed returns clean error."""
+        content = b"%PDF-1.4\n<<\n/Filter/FlateDecode>>stream\nBinary\xc3\x9b data"
+        files = {"file": ("test.pdf", BytesIO(content), "application/pdf")}
+        
+        with patch.dict(os.environ, {"ENABLE_FILE_UPLOAD": "true"}):
+            response = client.post("/api/file/upload", files=files)
+            assert response.status_code == 200
+            data = response.json()
+            assert data["success"] is True
+            # Should return helpful error message
+            assert "PyPDF2" in data["text"] or "PDF" in data["text"]
+            # Should NOT contain binary/garbled characters
+            assert "\xc3" not in data["text"]
+            assert "<<" not in data["text"] or "PyPDF2" in data["text"]
+
+    def test_upload_docx_without_library(self):
+        """Test uploading DOCX when python-docx is not installed returns clean error."""
+        content = b"PK\x03\x04\x14\x00\x06\x00\x08\x00Binary DOCX data"
+        files = {"file": ("test.docx", BytesIO(content), "application/vnd.openxmlformats-officedocument.wordprocessingml.document")}
+        
+        with patch.dict(os.environ, {"ENABLE_FILE_UPLOAD": "true"}):
+            response = client.post("/api/file/upload", files=files)
+            assert response.status_code == 200
+            data = response.json()
+            assert data["success"] is True
+            # Should return helpful error message
+            assert "python-docx" in data["text"] or "DOCX" in data["text"]
+            # Should NOT contain binary/garbled characters
+            assert "PK\x03\x04" not in data["text"]
+
 
 class TestFileUploadIntegration:
     """Integration tests for file upload with API."""
