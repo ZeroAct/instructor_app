@@ -74,11 +74,11 @@ export default function ModelConfigStep({
   };
 
   const handleAddParameter = () => {
-    const newConfig = {
+    const newConfig: ModelConfig = {
       ...localConfig,
       parameters: [
         ...localConfig.parameters,
-        { key: '', value: '', type: 'string' as 'string' | 'number' },
+        { key: '', value: '', type: 'string' as const },
       ],
     };
     setLocalConfig(newConfig);
@@ -126,7 +126,6 @@ export default function ModelConfigStep({
   };
 
   const handleNext = () => {
-    setConfig(localConfig);
     onNext();
   };
 
