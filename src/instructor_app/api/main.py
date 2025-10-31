@@ -297,10 +297,10 @@ async def get_file_config():
             "allowed_extensions": parser.config.get("file_upload", {}).get("allowed_extensions", []),
             "ocr_available": ocr_available,
         }
-    except Exception as e:
+    except Exception:
+        # Don't expose internal error details to external users
         return {
             "enabled": True,
-            "error": str(e),
             "message": "File upload enabled but configuration could not be loaded"
         }
 
