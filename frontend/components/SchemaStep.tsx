@@ -11,9 +11,10 @@ interface SchemaStepProps {
   setPrompt?: (prompt: string) => void;
   setPromptPrefix?: (prefix: string) => void;
   onNext: () => void;
+  onPrevious?: () => void;
 }
 
-export default function SchemaStep({ schema, setSchema, setPrompt, setPromptPrefix, onNext }: SchemaStepProps) {
+export default function SchemaStep({ schema, setSchema, setPrompt, setPromptPrefix, onNext, onPrevious }: SchemaStepProps) {
   const t = useTranslations('schemaStep');
   const [validationMessage, setValidationMessage] = useState<string | null>(null);
   const [isValidating, setIsValidating] = useState(false);
@@ -435,13 +436,23 @@ export default function SchemaStep({ schema, setSchema, setPrompt, setPromptPref
       )}
 
       <div className="flex justify-between pt-3">
-        <button
-          onClick={handleValidate}
-          disabled={isValidating}
-          className="px-4 py-2 text-sm bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition disabled:opacity-50"
-        >
-          {isValidating ? t('validating') : t('validateSchema')}
-        </button>
+        <div className="flex gap-2">
+          {onPrevious && (
+            <button
+              onClick={onPrevious}
+              className="px-4 py-2 text-sm bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition"
+            >
+              ← {t('previous')}
+            </button>
+          )}
+          <button
+            onClick={handleValidate}
+            disabled={isValidating}
+            className="px-4 py-2 text-sm bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition disabled:opacity-50"
+          >
+            {isValidating ? t('validating') : t('validateSchema')}
+          </button>
+        </div>
         <button
           onClick={onNext}
           className="px-4 py-2 text-sm bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"

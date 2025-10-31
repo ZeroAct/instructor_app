@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { SchemaDefinition, ModelConfig } from '@/types/schema';
 import StepIndicator from './StepIndicator';
+import ModelConfigStep from './ModelConfigStep';
 import SchemaStep from './SchemaStep';
 import PromptStep from './PromptStep';
 import ResultsStep from './ResultsStep';
@@ -64,8 +65,10 @@ export default function InstructorApp() {
       }
 
       const savedModelConfig = localStorage.getItem(STORAGE_KEYS.MODEL_CONFIG);
+      let loadedModelConfig = DEFAULT_MODEL_CONFIG;
       if (savedModelConfig) {
-        setModelConfig(JSON.parse(savedModelConfig));
+        loadedModelConfig = JSON.parse(savedModelConfig);
+        setModelConfig(loadedModelConfig);
       }
 
       const savedPromptPrefix = localStorage.getItem(STORAGE_KEYS.PROMPT_PREFIX);
@@ -81,6 +84,12 @@ export default function InstructorApp() {
       const savedExtractList = localStorage.getItem(STORAGE_KEYS.EXTRACT_LIST);
       if (savedExtractList) {
         setExtractList(JSON.parse(savedExtractList));
+      }
+
+      // Check if model is configured (minimal check: model name exists)
+      // If not configured, start at Step 0 (Model Configuration)
+      if (!loadedModelConfig.model || loadedModelConfig.model.trim() === '') {
+        setCurrentStep(0);
       }
     } catch (error) {
       console.error('Error loading from localStorage:', error);
@@ -136,6 +145,7 @@ export default function InstructorApp() {
   }, [extractList, isInitialized]);
 
   const steps = [
+    { number: 0, title: t('steps.modelConfig.title'), description: t('steps.modelConfig.description') },
     { number: 1, title: t('steps.schema.title'), description: t('steps.schema.description') },
     { number: 2, title: t('steps.prompt.title'), description: t('steps.prompt.description') },
     { number: 3, title: t('steps.results.title'), description: t('steps.results.description') },
@@ -146,7 +156,11 @@ export default function InstructorApp() {
   };
 
   const handlePrevious = () => {
-    if (currentStep > 1) setCurrentStep(currentStep - 1);
+    if (currentStep > 0) setCurrentStep(currentStep - 1);
+  };
+
+  const handleStepClick = (stepNumber: number) => {
+    setCurrentStep(stepNumber);
   };
 
   return (
@@ -208,12 +222,19 @@ export default function InstructorApp() {
 
       {/* Step Indicator */}
       <div className="container mx-auto px-4 py-4">
-        <StepIndicator steps={steps} currentStep={currentStep} />
+        <StepIndicator steps={steps} currentStep={currentStep} onStepClick={handleStepClick} />
       </div>
 
       {/* Main Content - Wide View */}
       <div className="container mx-auto px-4 pb-8">
         <div className="bg-white rounded-2xl shadow-xl p-6">
+          {currentStep === 0 && (
+            <ModelConfigStep
+              config={modelConfig}
+              setConfig={setModelConfig}
+              onNext={handleNext}
+            />
+          )}
           {currentStep === 1 && (
             <SchemaStep
               schema={schema}
@@ -221,6 +242,7 @@ export default function InstructorApp() {
               setPrompt={setPrompt}
               setPromptPrefix={setPromptPrefix}
               onNext={handleNext}
+              onPrevious={handlePrevious}
             />
           )}
           {currentStep === 2 && (

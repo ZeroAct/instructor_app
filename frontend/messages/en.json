@@ -5,6 +5,10 @@
     "settings": "Settings"
   },
   "steps": {
+    "modelConfig": {
+      "title": "Model",
+      "description": "Configure LLM"
+    },
     "schema": {
       "title": "Schema",
       "description": "Define data structure"
@@ -17,6 +21,31 @@
       "title": "Results",
       "description": "View output"
     }
+  },
+  "modelConfigStep": {
+    "title": "Model Configuration",
+    "quickStart": "Quick Start:",
+    "quickStartText": "Configure your LLM provider and model settings. This is required before you can start extracting data.",
+    "provider": "Provider",
+    "model": "Model",
+    "modelPlaceholder": "e.g., gpt-4, claude-3-opus-20240229",
+    "apiKey": "API Key",
+    "apiKeyPlaceholder": "Enter your API key",
+    "baseUrl": "Base URL",
+    "baseUrlPlaceholder": "Optional custom endpoint",
+    "parameters": "Model Parameters",
+    "parameterKey": "Parameter Key",
+    "parameterValue": "Value",
+    "addParameter": "Add Parameter",
+    "remove": "Delete",
+    "noParameters": "No parameters configured. Click \"Add Parameter\" to add one.",
+    "validation": "Model Validation",
+    "validationDesc": "Test your model configuration with a dummy request to verify it works correctly.",
+    "validateModel": "Validate Model",
+    "validating": "Validating...",
+    "validationSuccess": "Model configuration is valid!",
+    "validationError": "Validation failed",
+    "nextSchema": "Next: Define Schema"
   },
   "schemaStep": {
     "title": "Schema Definition",
@@ -42,6 +71,7 @@
     "addNestedField": "Add Nested Field",
     "validateSchema": "Validate Schema",
     "validating": "Validating...",
+    "previous": "Previous",
     "nextPrompt": "Next: Enter Prompt",
     "schemaValid": "Schema is valid!",
     "schemaInvalid": "Schema validation failed",

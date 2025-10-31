@@ -5,6 +5,10 @@
     "settings": "설정"
   },
   "steps": {
+    "modelConfig": {
+      "title": "모델",
+      "description": "LLM 설정"
+    },
     "schema": {
       "title": "스키마",
       "description": "데이터 구조 정의"
@@ -17,6 +21,31 @@
       "title": "결과",
       "description": "출력 보기"
     }
+  },
+  "modelConfigStep": {
+    "title": "모델 구성",
+    "quickStart": "빠른 시작:",
+    "quickStartText": "LLM 제공자와 모델 설정을 구성하세요. 데이터 추출을 시작하기 전에 필요합니다.",
+    "provider": "제공자",
+    "model": "모델",
+    "modelPlaceholder": "예: gpt-4, claude-3-opus-20240229",
+    "apiKey": "API 키",
+    "apiKeyPlaceholder": "API 키를 입력하세요",
+    "baseUrl": "기본 URL",
+    "baseUrlPlaceholder": "선택적 사용자 정의 엔드포인트",
+    "parameters": "모델 매개변수",
+    "parameterKey": "매개변수 키",
+    "parameterValue": "값",
+    "addParameter": "매개변수 추가",
+    "remove": "삭제",
+    "noParameters": "구성된 매개변수가 없습니다. \"매개변수 추가\"를 클릭하여 추가하세요.",
+    "validation": "모델 검증",
+    "validationDesc": "더미 요청으로 모델 구성을 테스트하여 올바르게 작동하는지 확인하세요.",
+    "validateModel": "모델 검증",
+    "validating": "검증 중...",
+    "validationSuccess": "모델 구성이 유효합니다!",
+    "validationError": "검증 실패",
+    "nextSchema": "다음: 스키마 정의"
   },
   "schemaStep": {
     "title": "스키마 정의",
@@ -42,6 +71,7 @@
     "addNestedField": "중첩 필드 추가",
     "validateSchema": "스키마 검증",
     "validating": "검증 중...",
+    "previous": "이전",
     "nextPrompt": "다음: 프롬프트 입력",
     "schemaValid": "스키마가 유효합니다!",
     "schemaInvalid": "스키마 검증 실패",
