@@ -3,7 +3,7 @@
 from contextlib import asynccontextmanager
 from typing import Any, Dict, List
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi.templating import Jinja2Templates
@@ -12,6 +12,7 @@ from pydantic import BaseModel
 from instructor_app.schemas.dynamic import DynamicSchemaBuilder
 from instructor_app.utils.export import ExportFormatter
 from instructor_app.utils.instructor_client import InstructorClient
+from instructor_app.utils.file_parser import get_file_parser, is_file_upload_enabled
 
 
 class SchemaRequest(BaseModel):
@@ -229,6 +230,70 @@ async def export_result(export_request: ExportRequest):
         "filename": filename,
         "media_type": media_type,
     }
+
+
+@app.post("/api/file/upload")
+async def upload_file(file: UploadFile = File(...)):
+    """
+    Upload and parse a file to extract text content.
+    
+    This endpoint supports various file formats including:
+    - Images (JPG, PNG, etc.) - uses OCR
+    - PDF documents
+    - Word documents (DOC, DOCX)
+    - Excel spreadsheets (XLS, XLSX)
+    - Text files (TXT, CSV, JSON, XML, HTML, MD)
+    """
+    if not is_file_upload_enabled():
+        raise HTTPException(
+            status_code=403,
+            detail="File upload feature is disabled. Set ENABLE_FILE_UPLOAD=true to enable."
+        )
+    
+    try:
+        # Read file content
+        content = await file.read()
+        
+        # Parse file
+        parser = get_file_parser()
+        extracted_text = parser.parse_file(content, file.filename or "unknown")
+        
+        return {
+            "success": True,
+            "filename": file.filename,
+            "text": extracted_text,
+            "size": len(content),
+        }
+        
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"File parsing error: {str(e)}")
+
+
+@app.get("/api/file/config")
+async def get_file_config():
+    """Get file upload configuration."""
+    if not is_file_upload_enabled():
+        return {
+            "enabled": False,
+            "message": "File upload feature is disabled"
+        }
+    
+    try:
+        parser = get_file_parser()
+        return {
+            "enabled": True,
+            "max_file_size_mb": parser.config.get("file_upload", {}).get("max_file_size_mb", 10),
+            "allowed_extensions": parser.config.get("file_upload", {}).get("allowed_extensions", []),
+            "ocr_available": True,  # Since we're using paddleocr
+        }
+    except Exception as e:
+        return {
+            "enabled": True,
+            "error": str(e),
+            "message": "File upload enabled but configuration could not be loaded"
+        }
 
 
 @app.get("/health")

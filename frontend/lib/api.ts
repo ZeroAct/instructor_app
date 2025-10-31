@@ -82,3 +82,31 @@ export async function exportResult(data: any, format: 'json' | 'markdown', title
 
   return response.json();
 }
+
+export async function uploadFile(file: File) {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const response = await fetch(`${API_BASE_URL}/api/file/upload`, {
+    method: 'POST',
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.detail || 'Failed to upload file');
+  }
+
+  return response.json();
+}
+
+export async function getFileUploadConfig() {
+  const response = await fetch(`${API_BASE_URL}/api/file/config`);
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.detail || 'Failed to get file upload config');
+  }
+
+  return response.json();
+}

@@ -10,6 +10,7 @@ Web application for [Instructor](https://github.com/567-labs/instructor) - struc
 - 🎯 **Dynamic Schema Definition**: Create and validate Pydantic schemas on the fly
 - 🌊 **Streaming Support**: Real-time streaming output from LLM responses
 - 📤 **Export Functionality**: Export results in JSON or Markdown format
+- 📁 **File Upload & OCR**: Upload documents (PDF, Word, Excel, Images) with automatic text extraction using PaddleOCR
 - 🔌 **REST API**: Full-featured REST API for programmatic access
 - 🤖 (Comming Soon) **MCP Support**: Model Context Protocol server for tool integration
 - 🐳 **Docker Support**: Easy deployment with Docker and docker-compose
@@ -42,6 +43,9 @@ See [DOCKER.md](DOCKER.md) for detailed Docker instructions.
 # Install dependencies
 uv pip install -e .
 
+# Optional: Install file upload dependencies for OCR and document parsing
+uv pip install -e ".[file-upload]"
+
 # Run the web server
 python main.py
 
@@ -56,6 +60,9 @@ Create a `.env` file or set environment variables:
 ```bash
 OPENAI_API_KEY=your_openai_api_key
 ANTHROPIC_API_KEY=your_anthropic_api_key
+
+# File Upload Feature (optional, defaults to true)
+ENABLE_FILE_UPLOAD=true
 ```
 
 ## Deployment
@@ -170,6 +177,25 @@ curl -X POST http://localhost:8000/api/export \
     "title": "User Profile"
   }'
 ```
+
+#### Upload File for Text Extraction
+
+```bash
+# Upload a document and extract text
+curl -X POST http://localhost:8000/api/file/upload \
+  -F "file=@document.pdf"
+
+# Get file upload configuration
+curl http://localhost:8000/api/file/config
+```
+
+The file upload feature supports:
+- **Images**: JPG, PNG, BMP, GIF, TIFF (with OCR via PaddleOCR)
+- **Documents**: PDF, DOC, DOCX
+- **Spreadsheets**: XLS, XLSX, CSV
+- **Text files**: TXT, JSON, XML, HTML, Markdown, RTF
+
+Configuration options are available in `config.json` at the root of the project.
 
 ### MCP Server
 

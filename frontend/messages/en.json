@@ -98,9 +98,19 @@
     "promptPlaceholder": "Enter your prompt here...",
     "extractList": "Extract List",
     "extractListDesc": "Extract multiple items matching the schema",
+    "showFileUpload": "Upload File",
+    "hideFileUpload": "Hide File Upload",
     "previous": "Previous",
     "runExtraction": "Run Extraction",
     "running": "Running..."
+  },
+  "fileUpload": {
+    "dragDrop": "Drag and drop a file here",
+    "orClick": "or click to browse",
+    "supportedFormats": "Supports: PDF, Word, Excel, Images, Text files, and more",
+    "uploading": "Uploading...",
+    "uploadSuccess": "File uploaded successfully",
+    "uploadError": "Failed to upload file"
   },
   "resultsStep": {
     "title": "Extraction Results",

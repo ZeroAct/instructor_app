@@ -1,0 +1,33 @@
+{
+  "file_upload": {
+    "enabled": true,
+    "max_file_size_mb": 10,
+    "allowed_extensions": [
+      ".txt", ".pdf", ".doc", ".docx", ".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tiff",
+      ".csv", ".xlsx", ".xls", ".json", ".xml", ".html", ".md", ".rtf"
+    ]
+  },
+  "ocr": {
+    "backend": "paddleocr",
+    "paddleocr": {
+      "use_angle_cls": true,
+      "lang": "en",
+      "use_gpu": false,
+      "show_log": false,
+      "det_model_dir": null,
+      "rec_model_dir": null,
+      "cls_model_dir": null
+    },
+    "fallback_to_text": true,
+    "image_extensions": [".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tiff", ".webp"]
+  },
+  "text_extraction": {
+    "encoding": "utf-8",
+    "fallback_encodings": ["latin-1", "cp1252", "iso-8859-1"]
+  },
+  "pdf_processing": {
+    "extract_images": true,
+    "ocr_images": true,
+    "use_layout_analysis": false
+  }
+}

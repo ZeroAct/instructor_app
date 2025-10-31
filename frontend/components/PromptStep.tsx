@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { SchemaDefinition, ModelConfig } from '@/types/schema';
 import { runCompletion } from '@/lib/api';
+import FileUpload from './FileUpload';
 
 interface PromptStepProps {
   prompt: string;
@@ -34,6 +35,16 @@ export default function PromptStep({
   const tCommon = useTranslations('common');
   const [isRunning, setIsRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showFileUpload, setShowFileUpload] = useState(false);
+
+  const handleFileUploaded = (text: string, filename: string) => {
+    // Append or replace prompt with file content
+    if (prompt.trim()) {
+      setPrompt(prompt + '\n\n' + text);
+    } else {
+      setPrompt(text);
+    }
+  };
 
   const handleRun = async () => {
     setIsRunning(true);
@@ -83,9 +94,28 @@ export default function PromptStep({
       </div>
 
       <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-          {t('prefixLabel')}
-        </label>
+        <div className="flex justify-between items-center mb-1.5">
+          <label className="block text-sm font-semibold text-gray-700">
+            {t('prefixLabel')}
+          </label>
+          <button
+            type="button"
+            onClick={() => setShowFileUpload(!showFileUpload)}
+            className="text-xs text-purple-600 hover:text-purple-700 font-medium flex items-center gap-1"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+            </svg>
+            {showFileUpload ? (t('hideFileUpload') || 'Hide File Upload') : (t('showFileUpload') || 'Upload File')}
+          </button>
+        </div>
+        
+        {showFileUpload && (
+          <div className="mb-3">
+            <FileUpload onFileUploaded={handleFileUploaded} disabled={isRunning} />
+          </div>
+        )}
+        
         <textarea
           value={promptPrefix}
           onChange={(e) => setPromptPrefix(e.target.value)}
