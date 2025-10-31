@@ -57,6 +57,24 @@ OPENAI_API_KEY=your_openai_api_key
 ANTHROPIC_API_KEY=your_anthropic_api_key
 ```
 
+## Deployment
+
+### Deploy to AWS
+
+Want to deploy this app to AWS cloud? We've got you covered with a comprehensive guide!
+
+See [AWS_DEPLOYMENT.md](AWS_DEPLOYMENT.md) for step-by-step instructions on deploying to:
+- **AWS App Runner** (easiest option for beginners)
+- **Amazon ECS with Fargate** (production-grade with auto-scaling)
+- **EC2 with Docker** (full control and cost optimization)
+- **AWS Elastic Beanstalk** (quick multi-container deployment)
+
+The guide includes everything you need even if you have no AWS experience.
+
+### Local Docker Deployment
+
+See [DOCKER.md](DOCKER.md) for running with Docker locally.
+
 ## Usage
 
 ### Modern Frontend (Recommended)
@@ -191,6 +209,8 @@ ruff format src/
 - [USAGE.md](USAGE.md) - Detailed usage instructions, examples, and API reference
 - [FRONTEND_GUIDE.md](FRONTEND_GUIDE.md) - Frontend migration guide and architecture
 - [frontend/README.md](frontend/README.md) - Frontend-specific documentation
+- [AWS_DEPLOYMENT.md](AWS_DEPLOYMENT.md) - Complete guide for deploying to AWS cloud
+- [DOCKER.md](DOCKER.md) - Docker setup and deployment instructions
 
 ## Architecture
 
