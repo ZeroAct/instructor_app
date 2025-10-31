@@ -41,8 +41,11 @@ export default function SchemaStep({ schema, setSchema, setPrompt, setPromptPref
         name: 'StockAnalysis',
         description: 'Stock market sentiment analysis',
         fields: [
-          { name: 'bullish', type: 'bool' as const, description: 'Bullish sentiment indicator', required: true },
-          { name: 'bearish', type: 'bool' as const, description: 'Bearish sentiment indicator', required: true },
+          { name: 'bullish', type: 'str' as const, description: 'Bullish sentiment opinion', required: true },
+          { name: 'bearish', type: 'str' as const, description: 'Bearish sentiment opinion', required: true },
+          { name: 'neutral', type: 'str' as const, description: 'Neutral sentiment opinion', required: true },
+          { name: 'decision', type: 'str' as const, description: 'Overall decision recommendation (buy/hold/sell)', required: true },
+          { name: 'confidence', type: 'float' as const, description: 'Confidence score (0 to 1) of decision', required: true },
         ],
       },
       promptPrefix: 'Analyze the market sentiment:',

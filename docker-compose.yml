@@ -1,10 +1,6 @@
-version: '3.8'
-
 services:
   backend:
     build: .
-    ports:
-      - "8000:8000"
     environment:
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
@@ -12,23 +8,15 @@ services:
       - ./src:/app/src
       - ./main.py:/app/main.py
     restart: unless-stopped
-    networks:
-      - instructor-network
+    network_mode: "host"
 
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    ports:
-      - "3000:3000"
     environment:
       - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - PORT=3030
     depends_on:
       - backend
-    restart: unless-stopped
-    networks:
-      - instructor-network
-
-networks:
-  instructor-network:
-    driver: bridge
+    network_mode: "host"

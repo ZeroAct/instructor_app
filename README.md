@@ -2,7 +2,7 @@
 
 Web application for [Instructor](https://github.com/567-labs/instructor) - structured outputs from LLMs with dynamic schemas.
 
-![Instructor App UI](https://github.com/user-attachments/assets/2225429b-5269-4c9a-a55d-ce6c51833e92)
+![Instructor App UI](./instructor_app.png)
 
 ## Features
 

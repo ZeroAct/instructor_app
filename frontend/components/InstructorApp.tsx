@@ -51,7 +51,7 @@ export default function InstructorApp() {
   const [promptPrefix, setPromptPrefix] = useState(DEFAULT_PROMPT_PREFIX);
   const [prompt, setPrompt] = useState(DEFAULT_PROMPT);
   const [result, setResult] = useState<any>(null);
-  const [extractList, setExtractList] = useState(false);
+  const [extractList, setExtractList] = useState(true);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
 
@@ -160,6 +160,30 @@ export default function InstructorApp() {
           </div>
           <div className="flex items-center gap-3">
             <LanguageSwitcher />
+            <a
+              href="https://github.com/567-labs/instructor"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-3 py-1.5 bg-white/20 hover:bg-white/30 rounded-lg transition flex items-center gap-2 text-sm"
+              title="Instructor GitHub"
+            >
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path fillRule="evenodd" d="M12 2C6.477 2 2 6.486 2 12.021c0 4.431 2.865 8.186 6.839 9.504.5.094.683-.217.683-.483 0-.237-.009-.866-.013-1.7-2.782.605-3.369-1.343-3.369-1.343-.455-1.157-1.11-1.465-1.11-1.465-.908-.62.069-.608.069-.608 1.004.071 1.532 1.032 1.532 1.032.892 1.53 2.341 1.088 2.91.832.091-.647.35-1.088.636-1.339-2.221-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.987 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.56 9.56 0 0 1 2.504.337c1.909-1.296 2.748-1.026 2.748-1.026.546 1.378.202 2.397.1 2.65.64.701 1.028 1.595 1.028 2.688 0 3.848-2.338 4.695-4.566 4.943.36.31.681.92.681 1.855 0 1.338-.012 2.415-.012 2.743 0 .268.18.58.688.481A9.523 9.523 0 0 0 22 12.021C22 6.486 17.523 2 12 2Z" clipRule="evenodd" />
+              </svg>
+              Instructor
+            </a>
+            <a
+              href="https://github.com/ZeroAct/instructor_app"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-3 py-1.5 bg-white/20 hover:bg-white/30 rounded-lg transition flex items-center gap-2 text-sm"
+              title="Instructor App GitHub"
+            >
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path fillRule="evenodd" d="M12 2C6.477 2 2 6.486 2 12.021c0 4.431 2.865 8.186 6.839 9.504.5.094.683-.217.683-.483 0-.237-.009-.866-.013-1.7-2.782.605-3.369-1.343-3.369-1.343-.455-1.157-1.11-1.465-1.11-1.465-.908-.62.069-.608.069-.608 1.004.071 1.532 1.032 1.532 1.032.892 1.53 2.341 1.088 2.91.832.091-.647.35-1.088.636-1.339-2.221-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.987 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.56 9.56 0 0 1 2.504.337c1.909-1.296 2.748-1.026 2.748-1.026.546 1.378.202 2.397.1 2.65.64.701 1.028 1.595 1.028 2.688 0 3.848-2.338 4.695-4.566 4.943.36.31.681.92.681 1.855 0 1.338-.012 2.415-.012 2.743 0 .268.18.58.688.481A9.523 9.523 0 0 0 22 12.021C22 6.486 17.523 2 12 2Z" clipRule="evenodd" />
+              </svg>
+              App GitHub
+            </a>
             <button
               onClick={() => setIsSettingsOpen(true)}
               className="px-3 py-1.5 bg-white/20 hover:bg-white/30 rounded-lg transition flex items-center gap-2 text-sm"

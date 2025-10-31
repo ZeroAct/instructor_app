@@ -48,7 +48,6 @@ Create a `.env` file in the root directory:
 
 ```bash
 OPENAI_API_KEY=your_openai_api_key
-ANTHROPIC_API_KEY=your_anthropic_api_key
 ```
 
 Or set them when running:
@@ -153,12 +152,6 @@ For production deployment:
 3. Set up reverse proxy (nginx/traefik) for proper routing
 4. Configure SSL certificates
 5. Set up health checks and monitoring
-
-## Network
-
-Both services are connected via the `instructor-network` bridge network, allowing them to communicate using service names:
-- Backend accessible at: `http://backend:8000`
-- Frontend accessible at: `http://frontend:3000`
 
 ## Storage
 
