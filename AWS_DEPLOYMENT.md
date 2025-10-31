@@ -607,7 +607,7 @@ To use your own domain (e.g., instructor-app.com):
 
 Monthly cost estimates (approximate, verify current pricing at [https://aws.amazon.com/pricing](https://aws.amazon.com/pricing)):
 
-**Note**: These estimates are subject to change. Always check current AWS pricing and use the [AWS Pricing Calculator](https://calculator.aws) for accurate estimates.
+**Note**: These estimates are subject to change. Always check current AWS pricing and use the [AWS Pricing Calculator](https://calculator.aws.amazon.com) for accurate estimates.
 
 ### App Runner
 - 1 vCPU, 2 GB RAM, running 24/7
