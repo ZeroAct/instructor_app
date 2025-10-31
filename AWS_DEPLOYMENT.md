@@ -26,7 +26,8 @@ Before you start, you'll need:
 
 2. **API Keys**: 
    - OpenAI API key (get from [https://platform.openai.com](https://platform.openai.com))
-   - Or Anthropic API key (get from [https://console.anthropic.com](https://console.anthropic.com))
+   - And/or Anthropic API key (get from [https://console.anthropic.com](https://console.anthropic.com))
+   - You can configure one or both keys depending on which AI providers you want to use
 
 3. **AWS CLI** (optional but recommended):
    ```bash
@@ -151,7 +152,7 @@ aws apprunner create-service \
       "CodeConfiguration": {
         "ConfigurationSource": "REPOSITORY",
         "CodeConfigurationValues": {
-          "Runtime": "PYTHON_3",
+          "Runtime": "PYTHON_312",
           "BuildCommand": "pip install -e .",
           "StartCommand": "python main.py",
           "Port": "8000",
@@ -227,28 +228,34 @@ Amazon ECS (Elastic Container Service) with Fargate is a serverless container or
 3. **Push Docker Images to ECR** (Elastic Container Registry)
    
    ```bash
+   # Get your AWS account ID
+   ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+   echo "Your AWS Account ID: $ACCOUNT_ID"
+   
    # Create ECR repositories
    aws ecr create-repository --repository-name instructor-app-backend
    aws ecr create-repository --repository-name instructor-app-frontend
    
    # Get login credentials for ECR
-   aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin [ACCOUNT_ID].dkr.ecr.us-east-1.amazonaws.com
+   aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com
    
    # Build and push backend
    docker build -t instructor-app-backend .
-   docker tag instructor-app-backend:latest [ACCOUNT_ID].dkr.ecr.us-east-1.amazonaws.com/instructor-app-backend:latest
-   docker push [ACCOUNT_ID].dkr.ecr.us-east-1.amazonaws.com/instructor-app-backend:latest
+   docker tag instructor-app-backend:latest ${ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/instructor-app-backend:latest
+   docker push ${ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/instructor-app-backend:latest
    
    # Build and push frontend
    cd frontend
    docker build -t instructor-app-frontend .
-   docker tag instructor-app-frontend:latest [ACCOUNT_ID].dkr.ecr.us-east-1.amazonaws.com/instructor-app-frontend:latest
-   docker push [ACCOUNT_ID].dkr.ecr.us-east-1.amazonaws.com/instructor-app-frontend:latest
+   docker tag instructor-app-frontend:latest ${ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/instructor-app-frontend:latest
+   docker push ${ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/instructor-app-frontend:latest
    ```
 
 4. **Create ECS Task Definitions**
    
-   Create `backend-task-definition.json`:
+   **Important**: For security, use AWS Secrets Manager instead of plain text environment variables in production. See the [Setting up Environment Variables](#setting-up-environment-variables) section for secure configuration.
+   
+   Create `backend-task-definition.json` (example with plain text - use Secrets Manager in production):
    ```json
    {
      "family": "instructor-app-backend",
@@ -256,20 +263,21 @@ Amazon ECS (Elastic Container Service) with Fargate is a serverless container or
      "requiresCompatibilities": ["FARGATE"],
      "cpu": "512",
      "memory": "1024",
+     "executionRoleArn": "arn:aws:iam::ACCOUNT_ID:role/ecsTaskExecutionRole",
      "containerDefinitions": [
        {
          "name": "backend",
-         "image": "[ACCOUNT_ID].dkr.ecr.us-east-1.amazonaws.com/instructor-app-backend:latest",
+         "image": "ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/instructor-app-backend:latest",
          "portMappings": [
            {
              "containerPort": 8000,
              "protocol": "tcp"
            }
          ],
-         "environment": [
+         "secrets": [
            {
              "name": "OPENAI_API_KEY",
-             "value": "your_openai_api_key"
+             "valueFrom": "arn:aws:secretsmanager:us-east-1:ACCOUNT_ID:secret:instructor-app/openai-key"
            }
          ],
          "logConfiguration": {
@@ -285,8 +293,11 @@ Amazon ECS (Elastic Container Service) with Fargate is a serverless container or
    }
    ```
    
-   Register the task:
+   Register the task (replace ACCOUNT_ID with your AWS account ID):
    ```bash
+   # Replace ACCOUNT_ID in the JSON file first
+   sed -i "s/ACCOUNT_ID/$(aws sts get-caller-identity --query Account --output text)/g" backend-task-definition.json
+   
    aws ecs register-task-definition --cli-input-json file://backend-task-definition.json
    ```
 
@@ -295,7 +306,34 @@ Amazon ECS (Elastic Container Service) with Fargate is a serverless container or
    aws ecs create-cluster --cluster-name instructor-app-cluster
    ```
 
-6. **Create Application Load Balancer**
+6. **Set up VPC and Networking** (if you don't have existing VPC)
+   
+   ```bash
+   # Get default VPC
+   VPC_ID=$(aws ec2 describe-vpcs --filters "Name=isDefault,Values=true" --query "Vpcs[0].VpcId" --output text)
+   
+   # Get subnets in default VPC
+   SUBNET_IDS=$(aws ec2 describe-subnets --filters "Name=vpc-id,Values=${VPC_ID}" --query "Subnets[*].SubnetId" --output text | tr '\t' ',')
+   
+   # Create security group
+   SG_ID=$(aws ec2 create-security-group \
+     --group-name instructor-app-sg \
+     --description "Security group for Instructor App" \
+     --vpc-id ${VPC_ID} \
+     --query 'GroupId' --output text)
+   
+   # Allow inbound traffic
+   aws ec2 authorize-security-group-ingress --group-id ${SG_ID} --protocol tcp --port 8000 --cidr 0.0.0.0/0
+   aws ec2 authorize-security-group-ingress --group-id ${SG_ID} --protocol tcp --port 3000 --cidr 0.0.0.0/0
+   aws ec2 authorize-security-group-ingress --group-id ${SG_ID} --protocol tcp --port 80 --cidr 0.0.0.0/0
+   aws ec2 authorize-security-group-ingress --group-id ${SG_ID} --protocol tcp --port 443 --cidr 0.0.0.0/0
+   
+   echo "VPC: ${VPC_ID}"
+   echo "Subnets: ${SUBNET_IDS}"
+   echo "Security Group: ${SG_ID}"
+   ```
+
+7. **Create Application Load Balancer**
    
    Follow AWS Console:
    - Navigate to EC2 → Load Balancers
@@ -303,8 +341,9 @@ Amazon ECS (Elastic Container Service) with Fargate is a serverless container or
    - Configure listeners for ports 80/443
    - Create target groups for backend (port 8000) and frontend (port 3000)
 
-7. **Create ECS Services**
+8. **Create ECS Services**
    ```bash
+   # Use the values from step 6
    # Create backend service
    aws ecs create-service \
      --cluster instructor-app-cluster \
@@ -312,7 +351,7 @@ Amazon ECS (Elastic Container Service) with Fargate is a serverless container or
      --task-definition instructor-app-backend \
      --desired-count 1 \
      --launch-type FARGATE \
-     --network-configuration "awsvpcConfiguration={subnets=[subnet-xxx],securityGroups=[sg-xxx],assignPublicIp=ENABLED}"
+     --network-configuration "awsvpcConfiguration={subnets=[${SUBNET_IDS}],securityGroups=[${SG_ID}],assignPublicIp=ENABLED}"
    
    # Create frontend service (similar command with frontend task definition)
    ```
@@ -566,7 +605,9 @@ To use your own domain (e.g., instructor-app.com):
 
 ## Cost Estimation
 
-Monthly cost estimates (as of 2024):
+Monthly cost estimates (approximate, verify current pricing at [https://aws.amazon.com/pricing](https://aws.amazon.com/pricing)):
+
+**Note**: These estimates are subject to change. Always check current AWS pricing and use the [AWS Pricing Calculator](https://calculator.aws) for accurate estimates.
 
 ### App Runner
 - 1 vCPU, 2 GB RAM, running 24/7
