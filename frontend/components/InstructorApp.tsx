@@ -65,8 +65,10 @@ export default function InstructorApp() {
       }
 
       const savedModelConfig = localStorage.getItem(STORAGE_KEYS.MODEL_CONFIG);
+      let loadedModelConfig = DEFAULT_MODEL_CONFIG;
       if (savedModelConfig) {
-        setModelConfig(JSON.parse(savedModelConfig));
+        loadedModelConfig = JSON.parse(savedModelConfig);
+        setModelConfig(loadedModelConfig);
       }
 
       const savedPromptPrefix = localStorage.getItem(STORAGE_KEYS.PROMPT_PREFIX);
@@ -82,6 +84,12 @@ export default function InstructorApp() {
       const savedExtractList = localStorage.getItem(STORAGE_KEYS.EXTRACT_LIST);
       if (savedExtractList) {
         setExtractList(JSON.parse(savedExtractList));
+      }
+
+      // Check if model is configured (minimal check: model name exists)
+      // If not configured, start at Step 0 (Model Configuration)
+      if (!loadedModelConfig.model || loadedModelConfig.model.trim() === '') {
+        setCurrentStep(0);
       }
     } catch (error) {
       console.error('Error loading from localStorage:', error);
