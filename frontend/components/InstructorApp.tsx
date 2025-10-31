@@ -46,7 +46,7 @@ const DEFAULT_PROMPT = 'John Doe is a 30 year old software engineer living in Sa
 
 export default function InstructorApp() {
   const t = useTranslations();
-  const [currentStep, setCurrentStep] = useState(0);
+  const [currentStep, setCurrentStep] = useState(1);
   const [schema, setSchema] = useState<SchemaDefinition>(DEFAULT_SCHEMA);
   const [modelConfig, setModelConfig] = useState<ModelConfig>(DEFAULT_MODEL_CONFIG);
   const [promptPrefix, setPromptPrefix] = useState(DEFAULT_PROMPT_PREFIX);
@@ -151,6 +151,10 @@ export default function InstructorApp() {
     if (currentStep > 0) setCurrentStep(currentStep - 1);
   };
 
+  const handleStepClick = (stepNumber: number) => {
+    setCurrentStep(stepNumber);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50">
       {/* Header */}
@@ -210,7 +214,7 @@ export default function InstructorApp() {
 
       {/* Step Indicator */}
       <div className="container mx-auto px-4 py-4">
-        <StepIndicator steps={steps} currentStep={currentStep} />
+        <StepIndicator steps={steps} currentStep={currentStep} onStepClick={handleStepClick} />
       </div>
 
       {/* Main Content - Wide View */}
@@ -256,7 +260,7 @@ export default function InstructorApp() {
               schema={schema}
               onPrevious={handlePrevious}
               onReset={() => {
-                setCurrentStep(0);
+                setCurrentStep(1);
                 setResult(null);
               }}
             />
