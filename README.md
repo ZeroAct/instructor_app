@@ -10,7 +10,7 @@ Web application for [Instructor](https://github.com/567-labs/instructor) - struc
 - 🌊 **Streaming Support**: Real-time streaming output from LLM responses
 - 📤 **Export Functionality**: Export results in JSON or Markdown format
 - 🔌 **REST API**: Full-featured REST API for programmatic access
-- 🤖 **MCP Support**: Model Context Protocol server for tool integration
+- 🤖 (Comming Soon) **MCP Support**: Model Context Protocol server for tool integration
 - 🐳 **Docker Support**: Easy deployment with Docker and docker-compose
 - 📦 **UV Environment**: Modern Python package management with UV
 - ⚡ **Modern Frontend**: Next.js frontend with improved UX and step-by-step workflow
