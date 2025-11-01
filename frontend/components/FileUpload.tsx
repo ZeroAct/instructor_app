@@ -77,6 +77,10 @@ export default function FileUpload({ onFileUploaded, disabled = false }: FileUpl
           formats: data.formats,
           metadata: data.metadata,
         });
+        
+        // Auto-insert the default format immediately (no preview step)
+        const defaultText = data.formats[outputFormat] || data.formats.text || '';
+        onFileUploaded(defaultText, data.filename);
       } else {
         throw new Error('Invalid response from server');
       }
@@ -148,39 +152,57 @@ export default function FileUpload({ onFileUploaded, disabled = false }: FileUpl
 
   return (
     <div className="space-y-4">
-      {/* Compact Upload Button with Options */}
-      <div className="flex items-center space-x-2">
-        <input
-          ref={fileInputRef}
-          type="file"
-          onChange={handleFileSelect}
-          className="hidden"
-          disabled={disabled || isUploading}
-          accept=".txt,.pdf,.doc,.docx,.xls,.xlsx,.csv,.json,.xml,.html,.md,.jpg,.jpeg,.png,.bmp,.gif,.tiff,.webp"
+      {/* Compact Upload Button with Dropdown Options */}
+      <div className="relative inline-block">
+        <div className="flex items-center space-x-2">
+          <input
+            ref={fileInputRef}
+            type="file"
+            onChange={handleFileSelect}
+            className="hidden"
+            disabled={disabled || isUploading}
+            accept=".txt,.pdf,.doc,.docx,.xls,.xlsx,.csv,.json,.xml,.html,.md,.jpg,.jpeg,.png,.bmp,.gif,.tiff,.webp"
+          />
+          
+          <button
+            onClick={handleClick}
+            disabled={disabled || isUploading}
+            className="px-3 py-1.5 text-xs bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 text-white rounded transition-colors inline-flex items-center space-x-1"
+          >
+            <span>{isUploading ? t('uploading') : t('uploadButton')}</span>
+          </button>
+
+          <button
+            onClick={() => setShowOptions(!showOptions)}
+            disabled={disabled}
+            className="p-1.5 text-xs bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 rounded transition-colors"
+            title={t('settings')}
+          >
+            <Settings className="w-4 h-4" />
+          </button>
+
+          {uploadMode === 'structured' && (
+            <span className="text-xs text-gray-500">
+              {t('mode')}: {t(uploadMode + 'Mode')} | {t('format')}: {outputFormat.toUpperCase()}
+            </span>
+          )}
+        </div>
+
+        {/* Dropdown Options Panel (Dropbox style) */}
+        <FloatingOptions
+          isOpen={showOptions}
+          onClose={() => setShowOptions(false)}
+          mode={uploadMode}
+          onModeChange={setUploadMode}
+          outputFormat={outputFormat}
+          onOutputFormatChange={setOutputFormat}
+          doOcr={doOcr}
+          onDoOcrChange={setDoOcr}
+          extractTables={extractTables}
+          onExtractTablesChange={setExtractTables}
+          preserveHierarchy={preserveHierarchy}
+          onPreserveHierarchyChange={setPreserveHierarchy}
         />
-        
-        <button
-          onClick={handleClick}
-          disabled={disabled || isUploading}
-          className="px-3 py-1.5 text-xs bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 text-white rounded transition-colors inline-flex items-center space-x-1"
-        >
-          <span>{isUploading ? t('uploading') : t('uploadButton')}</span>
-        </button>
-
-        <button
-          onClick={() => setShowOptions(true)}
-          disabled={disabled}
-          className="p-1.5 text-xs bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 rounded transition-colors"
-          title={t('settings')}
-        >
-          <Settings className="w-4 h-4" />
-        </button>
-
-        {uploadMode === 'structured' && (
-          <span className="text-xs text-gray-500">
-            {t('mode')}: {t(uploadMode + 'Mode')} | {t('format')}: {outputFormat.toUpperCase()}
-          </span>
-        )}
       </div>
 
       {/* Error Display */}
@@ -190,7 +212,7 @@ export default function FileUpload({ onFileUploaded, disabled = false }: FileUpl
         </div>
       )}
 
-      {/* Document Viewer */}
+      {/* Document Viewer (Optional - for viewing/switching formats) */}
       {parsedDoc && (
         <DocumentViewer
           doc_id={parsedDoc.doc_id}
@@ -199,22 +221,6 @@ export default function FileUpload({ onFileUploaded, disabled = false }: FileUpl
           onInsert={handleInsertText}
         />
       )}
-
-      {/* Floating Options Panel */}
-      <FloatingOptions
-        isOpen={showOptions}
-        onClose={() => setShowOptions(false)}
-        mode={uploadMode}
-        onModeChange={setUploadMode}
-        outputFormat={outputFormat}
-        onOutputFormatChange={setOutputFormat}
-        doOcr={doOcr}
-        onDoOcrChange={setDoOcr}
-        extractTables={extractTables}
-        onExtractTablesChange={setExtractTables}
-        preserveHierarchy={preserveHierarchy}
-        onPreserveHierarchyChange={setPreserveHierarchy}
-      />
     </div>
   );
 }

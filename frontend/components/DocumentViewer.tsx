@@ -47,12 +47,9 @@ export default function DocumentViewer({
     switch (activeFormat) {
       case 'text':
         return (
-          <textarea
-            className="w-full h-full min-h-[400px] p-4 font-mono text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 resize-y"
-            value={editedText}
-            onChange={handleTextChange}
-            placeholder="Extracted text will appear here..."
-          />
+          <div className="w-full h-full min-h-[400px] p-4 font-mono text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 overflow-auto whitespace-pre-wrap select-text">
+            {editedText || 'No text content'}
+          </div>
         );
       
       case 'markdown':
@@ -69,12 +66,12 @@ export default function DocumentViewer({
       
       case 'html':
         return (
-          <div className="w-full h-full min-h-[400px] p-4 overflow-auto border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800">
-            <div 
-              className="prose dark:prose-invert max-w-none"
-              dangerouslySetInnerHTML={{ 
-                __html: formats.html || '<p class="text-gray-500">No HTML content</p>' 
-              }}
+          <div className="w-full h-full min-h-[400px] border border-gray-300 dark:border-gray-600 rounded bg-white">
+            <iframe
+              srcDoc={formats.html || '<p style="padding: 1rem; color: gray;">No HTML content</p>'}
+              className="w-full h-full min-h-[400px]"
+              sandbox="allow-same-origin"
+              title="HTML Preview"
             />
           </div>
         );
@@ -82,7 +79,7 @@ export default function DocumentViewer({
       case 'json':
         return (
           <div className="w-full h-full min-h-[400px] p-4 overflow-auto border border-gray-300 dark:border-gray-600 rounded bg-gray-900">
-            <pre className="text-sm text-green-400 font-mono whitespace-pre-wrap">
+            <pre className="text-sm text-green-400 font-mono whitespace-pre-wrap select-text">
               {formats.json || '{}'}
             </pre>
           </div>
@@ -130,7 +127,6 @@ export default function DocumentViewer({
             }`}
           >
             {t(format)}
-            {format === 'text' && ' (editable)'}
           </button>
         ))}
       </div>
