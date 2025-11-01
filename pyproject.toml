@@ -33,6 +33,8 @@ structured-parsing = [
     "docling>=1.0.0",
     "docling-core>=1.0.0",
     "paddleocr>=2.7.0",
+    "numpy>=1.24.0",
+    "Pillow>=10.0.0",
 ]
 all = [
     "paddleocr>=2.7.0",
@@ -41,6 +43,8 @@ all = [
     "openpyxl>=3.1.0",
     "docling>=1.0.0",
     "docling-core>=1.0.0",
+    "numpy>=1.24.0",
+    "Pillow>=10.0.0",
 ]
 
 [tool.ruff]

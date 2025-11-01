@@ -4,13 +4,59 @@ import io
 import json
 import os
 from pathlib import Path
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, Any, List, Tuple
 import inspect
+
+# Optional imports for PaddleOCR integration
+try:
+    import numpy as np
+    from PIL import Image
+    _IMAGING_AVAILABLE = True
+except ImportError:
+    _IMAGING_AVAILABLE = False
+    np = None
+    Image = None
 
 
 def is_structured_parsing_enabled() -> bool:
     """Check if structured parsing feature is enabled via environment variable."""
     return os.getenv("ENABLE_STRUCTURED_PARSING", "true").lower() in ("true", "1", "yes")
+
+
+class PaddleOCRAdapter:
+    """Adapter to integrate PaddleOCR with Docling's OCR interface."""
+    
+    def __init__(self, paddleocr_instance):
+        """Initialize adapter with PaddleOCR instance."""
+        if not _IMAGING_AVAILABLE:
+            raise ImportError(
+                "numpy and Pillow are required for PaddleOCR integration. "
+                "Install with: pip install numpy Pillow"
+            )
+        self.ocr = paddleocr_instance
+    
+    def __call__(self, image) -> List[Tuple[List[List[float]], Tuple[str, float]]]:
+        """
+        Perform OCR on image using PaddleOCR.
+        
+        Args:
+            image: PIL Image object
+            
+        Returns:
+            List of detection results in Docling-compatible format
+        """
+        # Convert PIL Image to numpy array for PaddleOCR
+        img_array = np.array(image)
+        
+        # Perform OCR
+        result = self.ocr.ocr(img_array, cls=True)
+        
+        # Transform PaddleOCR output to Docling-compatible format
+        # PaddleOCR format: [[[box], (text, confidence)], ...]
+        # Return format expected by Docling
+        if result and result[0]:
+            return result[0]
+        return []
 
 
 class StructuredDocumentParser:
@@ -112,7 +158,7 @@ class StructuredDocumentParser:
         return self._paddleocr
 
     def _get_docling_converter(self):
-        """Lazy load Docling converter."""
+        """Lazy load Docling converter with PaddleOCR integration."""
         if self._docling_converter is None:
             if not self._docling_available:
                 raise ImportError(
@@ -122,27 +168,46 @@ class StructuredDocumentParser:
             try:
                 from docling.document_converter import DocumentConverter
                 from docling.datamodel.base_models import InputFormat
-                from docling.datamodel.pipeline_options import PdfPipelineOptions
+                from docling.datamodel.pipeline_options import PdfPipelineOptions, OcrOptions
                 from docling.backend.pypdfium2_backend import PyPdfiumDocumentBackend
                 
                 docling_config = self.config.get("structured_parsing", {}).get("docling", {})
                 pipeline_opts = docling_config.get("pipeline_options", {})
                 
                 # Configure pipeline options
-                pipeline_options = PdfPipelineOptions(
-                    do_ocr=docling_config.get("do_ocr", True),
-                    do_table_structure=pipeline_opts.get("do_table_structure", True),
-                )
+                pipeline_kwargs = {
+                    "do_ocr": docling_config.get("do_ocr", True),
+                    "do_table_structure": pipeline_opts.get("do_table_structure", True),
+                }
                 
-                # If PaddleOCR is configured, set it as OCR engine
+                # Integrate PaddleOCR as OCR engine if configured
                 if docling_config.get("ocr_engine") == "paddleocr" and self._paddleocr_available:
                     try:
                         # Get PaddleOCR instance
                         ocr_instance = self._get_paddleocr()
-                        # Note: Docling's OCR integration might need adapter
-                        # This is a placeholder for the integration
-                    except Exception:
-                        pass  # Fall back to default OCR
+                        
+                        # Create PaddleOCR adapter for Docling
+                        paddleocr_adapter = PaddleOCRAdapter(ocr_instance)
+                        
+                        # Configure OCR options with PaddleOCR
+                        try:
+                            from docling.datamodel.pipeline_options import OcrKind
+                            
+                            ocr_options = OcrOptions(
+                                kind=OcrKind.CUSTOM,
+                                custom_ocr_engine=paddleocr_adapter,
+                            )
+                            pipeline_kwargs["ocr_options"] = ocr_options
+                        except ImportError:
+                            # Older Docling version - try alternative method
+                            # Pass custom OCR engine directly if supported
+                            pipeline_kwargs["ocr_engine"] = paddleocr_adapter
+                            
+                    except Exception as e:
+                        # Fall back to default OCR if PaddleOCR integration fails
+                        print(f"Warning: PaddleOCR integration failed, using default OCR: {e}")
+                
+                pipeline_options = PdfPipelineOptions(**pipeline_kwargs)
                 
                 self._docling_converter = DocumentConverter(
                     allowed_formats=[

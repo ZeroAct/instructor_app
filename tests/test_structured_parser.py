@@ -164,6 +164,65 @@ class TestStructuredDocumentParser:
         ocr = parser._get_paddleocr()
         assert ocr is not None
 
+    @patch('instructor_app.utils.structured_parser.StructuredDocumentParser._get_paddleocr')
+    @patch('instructor_app.utils.structured_parser.StructuredDocumentParser._get_docling_converter')
+    def test_paddleocr_docling_integration(self, mock_converter, mock_get_ocr):
+        """Test PaddleOCR is properly integrated with Docling converter."""
+        parser = StructuredDocumentParser()
+        parser._paddleocr_available = True
+        parser._docling_available = True
+        
+        # Mock PaddleOCR
+        mock_ocr = MagicMock()
+        mock_get_ocr.return_value = mock_ocr
+        
+        # Mock Docling converter
+        mock_conv = MagicMock()
+        mock_converter.return_value = mock_conv
+        
+        # Get converter should integrate PaddleOCR
+        converter = parser._get_docling_converter()
+        assert converter is not None
+        
+        # Verify PaddleOCR was attempted to be integrated
+        mock_get_ocr.assert_called()
+
+
+class TestPaddleOCRAdapter:
+    """Test PaddleOCR adapter for Docling."""
+    
+    def test_adapter_initialization(self):
+        """Test adapter initializes with PaddleOCR instance."""
+        from instructor_app.utils.structured_parser import PaddleOCRAdapter
+        
+        mock_ocr = MagicMock()
+        adapter = PaddleOCRAdapter(mock_ocr)
+        assert adapter.ocr is mock_ocr
+    
+    def test_adapter_call(self):
+        """Test adapter performs OCR on image."""
+        from instructor_app.utils.structured_parser import PaddleOCRAdapter
+        from PIL import Image
+        import numpy as np
+        
+        # Mock PaddleOCR
+        mock_ocr = MagicMock()
+        mock_ocr.ocr.return_value = [[
+            [[[0, 0], [100, 0], [100, 50], [0, 50]], ("Test text", 0.99)]
+        ]]
+        
+        adapter = PaddleOCRAdapter(mock_ocr)
+        
+        # Create test image
+        test_image = Image.new('RGB', (100, 100), color='white')
+        
+        # Call adapter
+        result = adapter(test_image)
+        
+        # Verify OCR was called
+        mock_ocr.ocr.assert_called_once()
+        assert len(result) > 0
+
 
 class TestStructuredParserIntegration:
     """Integration tests for structured parser."""
