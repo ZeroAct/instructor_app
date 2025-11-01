@@ -105,14 +105,36 @@ class FileParser:
         if self._ocr is None:
             try:
                 from paddleocr import PaddleOCR
+                import inspect
                 
                 ocr_config = self.config.get("ocr", {}).get("paddleocr", {})
-                self._ocr = PaddleOCR(
-                    use_angle_cls=ocr_config.get("use_angle_cls", True),
-                    lang=ocr_config.get("lang", "en"),
-                    use_gpu=ocr_config.get("use_gpu", False),
-                    show_log=ocr_config.get("show_log", False),
-                )
+                
+                # Get valid parameters for PaddleOCR.__init__
+                sig = inspect.signature(PaddleOCR.__init__)
+                valid_params = set(sig.parameters.keys()) - {'self'}
+                
+                # Build kwargs with only valid parameters
+                kwargs = {}
+                
+                # Common parameters with their config keys and defaults
+                param_mapping = {
+                    'use_angle_cls': ('use_angle_cls', True),
+                    'lang': ('lang', 'en'),
+                    'use_gpu': ('use_gpu', False),  # May not be valid in newer versions
+                    'show_log': ('show_log', False),
+                    'det_model_dir': ('det_model_dir', None),
+                    'rec_model_dir': ('rec_model_dir', None),
+                    'cls_model_dir': ('cls_model_dir', None),
+                }
+                
+                for param_name, (config_key, default_value) in param_mapping.items():
+                    if param_name in valid_params:
+                        value = ocr_config.get(config_key, default_value)
+                        # Only add non-None values
+                        if value is not None:
+                            kwargs[param_name] = value
+                
+                self._ocr = PaddleOCR(**kwargs)
             except ImportError:
                 raise ImportError(
                     "PaddleOCR is not installed. Install it with: pip install paddleocr"

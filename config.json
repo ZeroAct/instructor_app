@@ -16,7 +16,8 @@
       "show_log": false,
       "det_model_dir": null,
       "rec_model_dir": null,
-      "cls_model_dir": null
+      "cls_model_dir": null,
+      "_comment": "Note: use_gpu parameter may not be available in PaddleOCR 3.3.1+. The parser automatically filters invalid parameters."
     },
     "fallback_to_text": true,
     "image_extensions": [".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tiff", ".webp"]

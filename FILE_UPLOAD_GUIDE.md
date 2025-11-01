@@ -104,9 +104,12 @@ Configuration is stored in `config.json` at the project root:
 - `paddleocr`: PaddleOCR-specific configuration
   - `use_angle_cls`: Enable text angle classification
   - `lang`: Language for OCR (e.g., "en", "ch", "fr")
-  - `use_gpu`: Whether to use GPU acceleration
+  - `use_gpu`: Whether to use GPU acceleration (Note: Not available in PaddleOCR 3.3.1+)
   - `show_log`: Show PaddleOCR logging
   - Model directories (optional, uses default if null)
+  
+  **Important**: The parser automatically validates and filters parameters based on your PaddleOCR version. If a parameter is not supported by your version (like `use_gpu` in 3.3.1+), it will be automatically skipped. This ensures compatibility across different PaddleOCR versions.
+  
 - `fallback_to_text`: Fallback to text extraction if OCR fails
 - `image_extensions`: List of image extensions to process with OCR
 
@@ -285,6 +288,35 @@ To add a custom OCR backend:
 - Temporary files (for OCR) are cleaned up automatically
 
 ## Troubleshooting
+
+### PaddleOCR Version Compatibility
+
+**Error**: `[Image file - OCR failed: Unknown argument: use_gpu]`
+
+**Cause**: PaddleOCR 3.3.1+ removed the `use_gpu` parameter and changed how GPU acceleration is configured.
+
+**Solution**: The file parser automatically detects and filters invalid parameters. If you see this error:
+
+1. Update to the latest version of the code (commit with parameter validation)
+2. The parser uses Python's `inspect` module to validate parameters before passing them to PaddleOCR
+3. Invalid parameters are automatically skipped
+
+**Manual Fix** (if needed):
+- Remove or comment out `use_gpu` from `config.json` if you're manually editing
+- Or set it to `null` to skip it
+
+```json
+{
+  "ocr": {
+    "paddleocr": {
+      "use_angle_cls": true,
+      "lang": "en",
+      // "use_gpu": false,  // Commented out for 3.3.1+
+      "show_log": false
+    }
+  }
+}
+```
 
 ### PaddleOCR Not Working
 

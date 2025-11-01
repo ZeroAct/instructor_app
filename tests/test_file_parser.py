@@ -147,6 +147,33 @@ class TestFileParser:
             result = parser.parse_file(content, "test.png")
             assert "This is OCR text" in result or "Image file" in result
 
+    def test_ocr_parameter_validation(self):
+        """Test that OCR parameter validation filters invalid parameters."""
+        parser = FileParser()
+        
+        # Mock PaddleOCR that doesn't accept use_gpu parameter
+        class MockPaddleOCR:
+            def __init__(self, use_angle_cls=True, lang='en', show_log=False):
+                # Simulates PaddleOCR 3.3.1+ that doesn't have use_gpu
+                self.use_angle_cls = use_angle_cls
+                self.lang = lang
+                self.show_log = show_log
+            
+            def ocr(self, img_path, cls=True):
+                return [[]]
+        
+        with patch('instructor_app.utils.file_parser.PaddleOCR', MockPaddleOCR):
+            # This should not raise an error even though config has use_gpu
+            try:
+                ocr = parser._get_ocr()
+                assert ocr is not None
+                # Verify it's our mock
+                assert isinstance(ocr, MockPaddleOCR)
+            except TypeError as e:
+                if "use_gpu" in str(e):
+                    pytest.fail("Parameter validation failed - use_gpu was not filtered out")
+                raise
+
     @patch('instructor_app.utils.file_parser.PyPDF2')
     def test_parse_pdf_file(self, mock_pypdf2):
         """Test parsing PDF file with mocked PyPDF2."""
