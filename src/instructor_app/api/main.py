@@ -434,6 +434,231 @@ async def get_structured_config():
         }
 
 
+@app.post("/api/file/parse")
+async def parse_file_cached(
+    file: UploadFile = File(...),
+    do_ocr: bool = None,
+    extract_tables: bool = None,
+    preserve_hierarchy: bool = None,
+):
+    """
+    Parse a file and cache it for later format export.
+    This allows users to parse once and export to multiple formats without re-uploading.
+    
+    Query Parameters:
+        do_ocr: Enable OCR for scanned documents. Default: from config
+        extract_tables: Extract tables with structure. Default: from config
+        preserve_hierarchy: Maintain document hierarchy. Default: from config
+    
+    Returns:
+        Document ID and all available formats
+    """
+    if not is_structured_parsing_enabled():
+        raise HTTPException(
+            status_code=403,
+            detail="Structured parsing feature is disabled. Set ENABLE_STRUCTURED_PARSING=true to enable."
+        )
+    
+    try:
+        from instructor_app.utils.document_cache import get_document_cache
+        
+        # Read file content
+        content = await file.read()
+        
+        # Build options from query parameters
+        options = {}
+        if do_ocr is not None:
+            options['do_ocr'] = do_ocr
+        if extract_tables is not None:
+            options['extract_tables'] = extract_tables
+        if preserve_hierarchy is not None:
+            options['preserve_hierarchy'] = preserve_hierarchy
+        
+        # Parse document (but don't export yet)
+        parser = get_structured_parser()
+        parsed_doc, metadata = parser.parse_document_only(
+            content,
+            file.filename or "unknown",
+            **options
+        )
+        
+        # Export to all formats upfront for better UX
+        formats = {}
+        for fmt in ["text", "markdown", "json", "html"]:
+            try:
+                exported = parser.export_document(parsed_doc, fmt)
+                # Convert to string for JSON serialization
+                if fmt == "json":
+                    import json
+                    formats[fmt] = json.dumps(exported, indent=2) if isinstance(exported, dict) else str(exported)
+                else:
+                    formats[fmt] = str(exported)
+            except Exception as e:
+                print(f"[API] Warning: Failed to export to {fmt}: {e}")
+                formats[fmt] = f"[Export to {fmt} failed: {str(e)}]"
+        
+        # Store in cache
+        cache = get_document_cache()
+        doc_id = cache.store(
+            filename=file.filename or "unknown",
+            parsed_content=parsed_doc,
+            formats=formats
+        )
+        
+        return {
+            "success": True,
+            "doc_id": doc_id,
+            "filename": file.filename,
+            "metadata": metadata,
+            "formats": formats,
+            "size": len(content),
+        }
+        
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except ImportError as e:
+        raise HTTPException(
+            status_code=503,
+            detail=f"Required library not available: {str(e)}"
+        )
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Document parsing error: {str(e)}")
+
+
+@app.post("/api/file/export/{doc_id}")
+async def export_cached_document(
+    doc_id: str,
+    output_format: str = "markdown"
+):
+    """
+    Export a previously parsed document to the specified format.
+    This is much faster than re-parsing since the document is cached.
+    
+    Path Parameters:
+        doc_id: Document ID from parse endpoint
+        
+    Query Parameters:
+        output_format: Output format (markdown, json, html, text). Default: markdown
+    
+    Returns:
+        Exported document in requested format
+    """
+    if not is_structured_parsing_enabled():
+        raise HTTPException(
+            status_code=403,
+            detail="Structured parsing feature is disabled."
+        )
+    
+    try:
+        from instructor_app.utils.document_cache import get_document_cache
+        
+        # Get from cache
+        cache = get_document_cache()
+        cached_doc = cache.get(doc_id)
+        
+        if not cached_doc:
+            raise HTTPException(
+                status_code=404,
+                detail="Document not found or expired. Please re-upload."
+            )
+        
+        # Check if format is already cached
+        if output_format in cached_doc.formats:
+            content = cached_doc.formats[output_format]
+        else:
+            # Export on demand
+            parser = get_structured_parser()
+            content = parser.export_document(cached_doc.parsed_content, output_format)
+            
+            # Convert to string and cache it
+            if output_format == "json":
+                import json
+                content_str = json.dumps(content, indent=2) if isinstance(content, dict) else str(content)
+            else:
+                content_str = str(content)
+            
+            # Update cache
+            cache.update_formats(doc_id, {output_format: content_str})
+            content = content_str
+        
+        return {
+            "success": True,
+            "doc_id": doc_id,
+            "filename": cached_doc.filename,
+            "format": output_format,
+            "text": content,
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Export error: {str(e)}")
+
+
+@app.get("/api/file/formats/{doc_id}")
+async def get_document_formats(doc_id: str):
+    """
+    Get available formats and metadata for a cached document.
+    
+    Path Parameters:
+        doc_id: Document ID from parse endpoint
+    
+    Returns:
+        Available formats and document metadata
+    """
+    if not is_structured_parsing_enabled():
+        raise HTTPException(
+            status_code=403,
+            detail="Structured parsing feature is disabled."
+        )
+    
+    try:
+        from instructor_app.utils.document_cache import get_document_cache
+        
+        cache = get_document_cache()
+        cached_doc = cache.get(doc_id)
+        
+        if not cached_doc:
+            raise HTTPException(
+                status_code=404,
+                detail="Document not found or expired"
+            )
+        
+        return {
+            "success": True,
+            "doc_id": doc_id,
+            "filename": cached_doc.filename,
+            "available_formats": list(cached_doc.formats.keys()),
+            **cached_doc.to_dict()
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
+
+
+@app.get("/api/file/cache/stats")
+async def get_cache_stats():
+    """Get document cache statistics."""
+    if not is_structured_parsing_enabled():
+        raise HTTPException(
+            status_code=403,
+            detail="Structured parsing feature is disabled."
+        )
+    
+    try:
+        from instructor_app.utils.document_cache import get_document_cache
+        
+        cache = get_document_cache()
+        return cache.get_stats()
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
+
+
 @app.get("/health")
 async def health():
     """Health check endpoint."""

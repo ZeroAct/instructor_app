@@ -2,7 +2,10 @@
 
 import { useState, useCallback, useRef } from 'react';
 import { useTranslations } from 'next-intl';
+import { Settings } from 'lucide-react';
 import { API_BASE_URL } from '@/lib/api';
+import DocumentViewer from './DocumentViewer';
+import FloatingOptions from './FloatingOptions';
 
 type UploadMode = 'simple' | 'structured';
 type OutputFormat = 'markdown' | 'json' | 'html' | 'text';
@@ -12,39 +15,46 @@ interface FileUploadProps {
   disabled?: boolean;
 }
 
+interface ParsedDocument {
+  doc_id: string;
+  filename: string;
+  formats: Record<string, string>;
+  metadata?: any;
+}
+
 export default function FileUpload({ onFileUploaded, disabled = false }: FileUploadProps) {
   const t = useTranslations('fileUpload');
   const tCommon = useTranslations('common');
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [uploadedFile, setUploadedFile] = useState<string | null>(null);
+  const [parsedDoc, setParsedDoc] = useState<ParsedDocument | null>(null);
   const [uploadMode, setUploadMode] = useState<UploadMode>('simple');
   const [outputFormat, setOutputFormat] = useState<OutputFormat>('markdown');
   const [doOcr, setDoOcr] = useState(true);
   const [extractTables, setExtractTables] = useState(true);
   const [preserveHierarchy, setPreserveHierarchy] = useState(true);
-  const [showPreview, setShowPreview] = useState(false);
-  const [extractedText, setExtractedText] = useState<string>('');
+  const [showOptions, setShowOptions] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const uploadFile = async (file: File) => {
     setIsUploading(true);
     setError(null);
-    setExtractedText('');
     
     try {
       const formData = new FormData();
       formData.append('file', file);
 
-      let url = `${API_BASE_URL}/api/file/upload`;
+      let url = `${API_BASE_URL}/api/file/parse`;
+      const params = new URLSearchParams();
+      
       if (uploadMode === 'structured') {
-        const params = new URLSearchParams({
-          output_format: outputFormat,
-          do_ocr: doOcr.toString(),
-          extract_tables: extractTables.toString(),
-          preserve_hierarchy: preserveHierarchy.toString(),
-        });
-        url = `${API_BASE_URL}/api/file/upload-structured?${params}`;
+        params.append('do_ocr', doOcr.toString());
+        params.append('extract_tables', extractTables.toString());
+        params.append('preserve_hierarchy', preserveHierarchy.toString());
+      }
+      
+      if (params.toString()) {
+        url += `?${params}`;
       }
 
       const response = await fetch(url, {
@@ -59,20 +69,20 @@ export default function FileUpload({ onFileUploaded, disabled = false }: FileUpl
 
       const data = await response.json();
       
-      if (data.success && data.text) {
-        setUploadedFile(data.filename);
-        setExtractedText(data.text);
-        if (!showPreview) {
-          // Immediately update if not in preview mode
-          onFileUploaded(data.text, data.filename);
-        }
+      if (data.success && data.formats) {
+        // Store parsed document
+        setParsedDoc({
+          doc_id: data.doc_id,
+          filename: data.filename,
+          formats: data.formats,
+          metadata: data.metadata,
+        });
       } else {
         throw new Error('Invalid response from server');
       }
     } catch (err: any) {
       setError(err.message || 'Failed to upload file');
-      setUploadedFile(null);
-      setExtractedText('');
+      setParsedDoc(null);
     } finally {
       setIsUploading(false);
     }
@@ -87,7 +97,7 @@ export default function FileUpload({ onFileUploaded, disabled = false }: FileUpl
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
-  }, [uploadMode, outputFormat, doOcr, extractTables, preserveHierarchy, showPreview]);
+  }, [uploadMode, doOcr, extractTables, preserveHierarchy]);
 
   const handleClick = () => {
     if (!disabled && fileInputRef.current) {
@@ -95,188 +105,116 @@ export default function FileUpload({ onFileUploaded, disabled = false }: FileUpl
     }
   };
 
-  const handleUseText = () => {
-    if (extractedText && uploadedFile) {
-      onFileUploaded(extractedText, uploadedFile);
-      setShowPreview(false);
+  const handleInsertText = (text: string) => {
+    if (parsedDoc) {
+      onFileUploaded(text, parsedDoc.filename);
+    }
+  };
+
+  const handleFormatSwitch = async (format: OutputFormat) => {
+    if (!parsedDoc) return;
+    
+    // Check if format is already in cache
+    if (format in parsedDoc.formats) {
+      setOutputFormat(format);
+      return;
+    }
+    
+    // Fetch format from server
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/api/file/export/${parsedDoc.doc_id}?output_format=${format}`
+      );
+      
+      if (!response.ok) {
+        throw new Error('Failed to export format');
+      }
+      
+      const data = await response.json();
+      
+      // Update cached formats
+      setParsedDoc({
+        ...parsedDoc,
+        formats: {
+          ...parsedDoc.formats,
+          [format]: data.text,
+        },
+      });
+      setOutputFormat(format);
+    } catch (err: any) {
+      setError(err.message || 'Failed to switch format');
     }
   };
 
   return (
-    <div className="inline-block">
-      <input
-        ref={fileInputRef}
-        type="file"
-        className="hidden"
-        onChange={handleFileSelect}
-        disabled={disabled || isUploading}
-        accept=".txt,.pdf,.doc,.docx,.jpg,.jpeg,.png,.bmp,.gif,.tiff,.csv,.xlsx,.xls,.json,.xml,.html,.md,.rtf"
-      />
-      
-      <button
-        onClick={handleClick}
-        disabled={disabled || isUploading}
-        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-purple-600 bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-md transition disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        {isUploading ? (
-          <>
-            <svg className="animate-spin h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            {t('uploading') || 'Uploading...'}
-          </>
-        ) : (
-          <>
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-            </svg>
-            {t('uploadButton') || 'Upload File'}
-          </>
-        )}
-      </button>
+    <div className="space-y-4">
+      {/* Compact Upload Button with Options */}
+      <div className="flex items-center space-x-2">
+        <input
+          ref={fileInputRef}
+          type="file"
+          onChange={handleFileSelect}
+          className="hidden"
+          disabled={disabled || isUploading}
+          accept=".txt,.pdf,.doc,.docx,.xls,.xlsx,.csv,.json,.xml,.html,.md,.jpg,.jpeg,.png,.bmp,.gif,.tiff,.webp"
+        />
+        
+        <button
+          onClick={handleClick}
+          disabled={disabled || isUploading}
+          className="px-3 py-1.5 text-xs bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 text-white rounded transition-colors inline-flex items-center space-x-1"
+        >
+          <span>{isUploading ? t('uploading') : t('uploadButton')}</span>
+        </button>
 
-      {/* Upload Configuration Modal/Popover */}
-      {!isUploading && (
-        <div className="mt-2 p-3 bg-gray-50 border border-gray-200 rounded-lg space-y-3">
-          {/* Mode Selection */}
-          <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-              {t('uploadMode') || 'Upload Mode'}
-            </label>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setUploadMode('simple')}
-                className={`flex-1 px-2 py-1.5 text-xs font-medium rounded transition ${
-                  uploadMode === 'simple'
-                    ? 'bg-purple-600 text-white'
-                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-                }`}
-              >
-                {t('simpleMode') || 'Simple'}
-              </button>
-              <button
-                onClick={() => setUploadMode('structured')}
-                className={`flex-1 px-2 py-1.5 text-xs font-medium rounded transition ${
-                  uploadMode === 'structured'
-                    ? 'bg-purple-600 text-white'
-                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-                }`}
-              >
-                {t('structuredMode') || 'Structured'}
-              </button>
-            </div>
-          </div>
+        <button
+          onClick={() => setShowOptions(true)}
+          disabled={disabled}
+          className="p-1.5 text-xs bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 rounded transition-colors"
+          title={t('settings')}
+        >
+          <Settings className="w-4 h-4" />
+        </button>
 
-          {/* Structured Mode Options */}
-          {uploadMode === 'structured' && (
-            <>
-              {/* Output Format */}
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-                  {t('outputFormat') || 'Output Format'}
-                </label>
-                <select
-                  value={outputFormat}
-                  onChange={(e) => setOutputFormat(e.target.value as OutputFormat)}
-                  className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-2 focus:ring-purple-600 focus:border-transparent"
-                >
-                  <option value="markdown">Markdown</option>
-                  <option value="json">JSON</option>
-                  <option value="html">HTML</option>
-                  <option value="text">Text</option>
-                </select>
-              </div>
-
-              {/* Toggle Options */}
-              <div className="space-y-2">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={doOcr}
-                    onChange={(e) => setDoOcr(e.target.checked)}
-                    className="w-3.5 h-3.5 text-purple-600 border-gray-300 rounded focus:ring-purple-600"
-                  />
-                  <span className="text-xs text-gray-700">{t('enableOcr') || 'Enable OCR'}</span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={extractTables}
-                    onChange={(e) => setExtractTables(e.target.checked)}
-                    className="w-3.5 h-3.5 text-purple-600 border-gray-300 rounded focus:ring-purple-600"
-                  />
-                  <span className="text-xs text-gray-700">{t('extractTables') || 'Extract Tables'}</span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={preserveHierarchy}
-                    onChange={(e) => setPreserveHierarchy(e.target.checked)}
-                    className="w-3.5 h-3.5 text-purple-600 border-gray-300 rounded focus:ring-purple-600"
-                  />
-                  <span className="text-xs text-gray-700">{t('preserveHierarchy') || 'Preserve Hierarchy'}</span>
-                </label>
-              </div>
-            </>
-          )}
-
-          {/* Preview Toggle */}
-          <label className="flex items-center gap-2 cursor-pointer pt-2 border-t border-gray-200">
-            <input
-              type="checkbox"
-              checked={showPreview}
-              onChange={(e) => setShowPreview(e.target.checked)}
-              className="w-3.5 h-3.5 text-purple-600 border-gray-300 rounded focus:ring-purple-600"
-            />
-            <span className="text-xs text-gray-700">{t('showPreview') || 'Show preview before inserting'}</span>
-          </label>
-        </div>
-      )}
-
-      {/* Status Messages */}
-      {uploadedFile && !error && !showPreview && (
-        <div className="mt-2 flex items-center gap-2 text-xs text-green-700 bg-green-50 border border-green-200 rounded-lg p-2">
-          <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-          </svg>
-          <span className="flex-1">
-            {t('uploadSuccess') || 'File uploaded successfully'}: <strong>{uploadedFile}</strong>
+        {uploadMode === 'structured' && (
+          <span className="text-xs text-gray-500">
+            {t('mode')}: {t(uploadMode + 'Mode')} | {t('format')}: {outputFormat.toUpperCase()}
           </span>
-        </div>
-      )}
+        )}
+      </div>
 
-      {/* Preview Panel */}
-      {showPreview && extractedText && uploadedFile && (
-        <div className="mt-3 border border-gray-300 rounded-lg overflow-hidden">
-          <div className="bg-gray-100 px-3 py-2 border-b border-gray-300 flex items-center justify-between">
-            <span className="text-xs font-semibold text-gray-700">
-              {t('preview') || 'Preview'}: {uploadedFile}
-            </span>
-            <button
-              onClick={handleUseText}
-              className="px-3 py-1 text-xs font-medium text-white bg-purple-600 hover:bg-purple-700 rounded transition"
-            >
-              {t('useText') || 'Use This Text'}
-            </button>
-          </div>
-          <div className="p-3 max-h-60 overflow-y-auto bg-white">
-            <pre className="text-xs font-mono whitespace-pre-wrap text-gray-800">{extractedText}</pre>
-          </div>
-        </div>
-      )}
-
+      {/* Error Display */}
       {error && (
-        <div className="mt-2 flex items-start gap-2 text-xs text-red-700 bg-red-50 border border-red-200 rounded-lg p-2">
-          <svg className="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          <div className="flex-1">
-            <p className="font-semibold">{tCommon('error') || 'Error'}</p>
-            <p>{error}</p>
-          </div>
+        <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded text-sm text-red-600 dark:text-red-400">
+          {error}
         </div>
       )}
+
+      {/* Document Viewer */}
+      {parsedDoc && (
+        <DocumentViewer
+          doc_id={parsedDoc.doc_id}
+          filename={parsedDoc.filename}
+          formats={parsedDoc.formats}
+          onInsert={handleInsertText}
+        />
+      )}
+
+      {/* Floating Options Panel */}
+      <FloatingOptions
+        isOpen={showOptions}
+        onClose={() => setShowOptions(false)}
+        mode={uploadMode}
+        onModeChange={setUploadMode}
+        outputFormat={outputFormat}
+        onOutputFormatChange={setOutputFormat}
+        doOcr={doOcr}
+        onDoOcrChange={setDoOcr}
+        extractTables={extractTables}
+        onExtractTablesChange={setExtractTables}
+        preserveHierarchy={preserveHierarchy}
+        onPreserveHierarchyChange={setPreserveHierarchy}
+      />
     </div>
   );
 }

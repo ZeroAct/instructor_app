@@ -382,6 +382,111 @@ class StructuredDocumentParser:
             except Exception:
                 pass
 
+    def parse_document_only(
+        self,
+        content: bytes,
+        filename: str,
+        **options
+    ) -> Tuple[Any, Dict[str, Any]]:
+        """
+        Parse document and return the raw Docling document object for caching.
+        This allows later export to any format without re-parsing.
+        
+        Args:
+            content: Binary content of the file
+            filename: Name of the file
+            **options: Additional parsing options (do_ocr, extract_tables, preserve_hierarchy)
+            
+        Returns:
+            Tuple of (parsed_document, metadata)
+        """
+        if not is_structured_parsing_enabled():
+            raise ValueError("Structured parsing feature is disabled")
+        
+        print(f"\n[StructuredParser] Parsing document: {filename}")
+        print(f"[StructuredParser] Options: {options}")
+        
+        # Get converter
+        converter = self._get_docling_converter()
+        
+        # Save content to temporary file for Docling
+        import tempfile
+        ext = Path(filename).suffix.lower()
+        
+        with tempfile.NamedTemporaryFile(delete=False, suffix=ext) as tmp:
+            tmp.write(content)
+            tmp_path = tmp.name
+        
+        print(f"[StructuredParser] Temporary file created: {tmp_path}")
+        
+        try:
+            # Convert document
+            print(f"[StructuredParser] Starting document conversion...")
+            result = converter.convert(tmp_path)
+            print(f"[StructuredParser] Document conversion complete")
+            
+            # Extract metadata
+            metadata = {
+                "filename": filename,
+                "page_count": len(result.document.pages) if hasattr(result.document, 'pages') else None,
+                "has_tables": self._has_tables(result.document),
+                "structure_preserved": True,
+            }
+            
+            return result.document, metadata
+            
+        finally:
+            # Clean up temp file
+            try:
+                if os.path.exists(tmp_path):
+                    os.unlink(tmp_path)
+                    print(f"[StructuredParser] Cleaned up temporary file")
+            except Exception:
+                pass
+    
+    def export_document(
+        self,
+        document: Any,
+        output_format: str = "markdown"
+    ) -> str:
+        """
+        Export a parsed Docling document to the specified format.
+        
+        Args:
+            document: Parsed Docling document object
+            output_format: Output format (markdown, json, html, text)
+            
+        Returns:
+            Formatted content as string
+        """
+        print(f"[StructuredParser] Exporting to {output_format}...")
+        
+        # Validate output format
+        supported_formats = self.config.get("structured_parsing", {}).get(
+            "output_formats", ["markdown", "json", "html", "text"]
+        )
+        if output_format not in supported_formats:
+            raise ValueError(
+                f"Unsupported output format: {output_format}. "
+                f"Supported: {', '.join(supported_formats)}"
+            )
+        
+        # Extract structured content based on format
+        if output_format == "markdown":
+            formatted_content = document.export_to_markdown()
+        elif output_format == "json":
+            formatted_content = document.export_to_dict()
+        elif output_format == "html":
+            formatted_content = document.export_to_html()
+        elif output_format == "text":
+            formatted_content = document.export_to_text()
+        else:
+            formatted_content = document.export_to_markdown()
+        
+        print(f"[StructuredParser] Export complete. Content length: {len(str(formatted_content))}")
+        
+        return formatted_content
+    
     def _has_tables(self, document) -> bool:
         """Check if document contains tables."""
         try:
