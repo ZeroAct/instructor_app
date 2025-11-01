@@ -100,6 +100,7 @@
     "extractListDesc": "Extract multiple items matching the schema",
     "showFileUpload": "Upload File",
     "hideFileUpload": "Hide File Upload",
+    "uploadButton": "Upload File",
     "previous": "Previous",
     "runExtraction": "Run Extraction",
     "running": "Running..."

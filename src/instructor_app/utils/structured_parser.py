@@ -34,6 +34,7 @@ class PaddleOCRAdapter:
                 "Install with: pip install numpy Pillow"
             )
         self.ocr = paddleocr_instance
+        self._call_count = 0
     
     def __call__(self, image) -> List[Tuple[List[List[float]], Tuple[str, float]]]:
         """
@@ -45,18 +46,31 @@ class PaddleOCRAdapter:
         Returns:
             List of detection results in Docling-compatible format
         """
-        # Convert PIL Image to numpy array for PaddleOCR
-        img_array = np.array(image)
+        self._call_count += 1
         
-        # Perform OCR
-        result = self.ocr.ocr(img_array, cls=True)
-        
-        # Transform PaddleOCR output to Docling-compatible format
-        # PaddleOCR format: [[[box], (text, confidence)], ...]
-        # Return format expected by Docling
-        if result and result[0]:
-            return result[0]
-        return []
+        try:
+            # Convert PIL Image to numpy array for PaddleOCR
+            img_array = np.array(image)
+            
+            # Perform OCR
+            result = self.ocr.ocr(img_array, cls=True)
+            
+            # Debug logging
+            if result and result[0]:
+                text_count = len(result[0])
+                print(f"[PaddleOCRAdapter] Call #{self._call_count}: Extracted {text_count} text regions from image {image.size}")
+            else:
+                print(f"[PaddleOCRAdapter] Call #{self._call_count}: No text detected in image {image.size}")
+            
+            # Transform PaddleOCR output to Docling-compatible format
+            # PaddleOCR format: [[[box], (text, confidence)], ...]
+            # Return format expected by Docling
+            if result and result[0]:
+                return result[0]
+            return []
+        except Exception as e:
+            print(f"[PaddleOCRAdapter] Error during OCR: {e}")
+            return []
 
 
 class StructuredDocumentParser:
@@ -193,10 +207,17 @@ class StructuredDocumentParser:
                 }
                 
                 # Integrate PaddleOCR as OCR engine if configured
-                if docling_config.get("ocr_engine") == "paddleocr" and self._paddleocr_available:
+                ocr_enabled = docling_config.get("do_ocr", True)
+                use_paddleocr = docling_config.get("ocr_engine") == "paddleocr" and self._paddleocr_available
+                
+                if ocr_enabled:
+                    print(f"[StructuredParser] OCR enabled. Using PaddleOCR: {use_paddleocr}")
+                
+                if ocr_enabled and use_paddleocr:
                     try:
                         # Get PaddleOCR instance
                         ocr_instance = self._get_paddleocr()
+                        print(f"[StructuredParser] PaddleOCR instance initialized")
                         
                         # Create PaddleOCR adapter for Docling
                         paddleocr_adapter = PaddleOCRAdapter(ocr_instance)
@@ -210,14 +231,16 @@ class StructuredDocumentParser:
                                 custom_ocr_engine=paddleocr_adapter,
                             )
                             pipeline_kwargs["ocr_options"] = ocr_options
+                            print(f"[StructuredParser] PaddleOCR adapter configured with OcrKind.CUSTOM")
                         except ImportError:
                             # Older Docling version - try alternative method
                             # Pass custom OCR engine directly if supported
                             pipeline_kwargs["ocr_engine"] = paddleocr_adapter
+                            print(f"[StructuredParser] PaddleOCR adapter configured via ocr_engine parameter")
                             
                     except Exception as e:
                         # Fall back to default OCR if PaddleOCR integration fails
-                        print(f"Warning: PaddleOCR integration failed, using default OCR: {e}")
+                        print(f"[StructuredParser] Warning: PaddleOCR integration failed, using default OCR: {e}")
                 
                 pipeline_options = PdfPipelineOptions(**pipeline_kwargs)
 
@@ -268,13 +291,18 @@ class StructuredDocumentParser:
             content: Binary content of the file
             filename: Name of the file
             output_format: Output format (markdown, json, html, text)
-            **options: Additional parsing options
+            **options: Additional parsing options (do_ocr, extract_tables, preserve_hierarchy)
             
         Returns:
             Dictionary with structured content and metadata
         """
         if not is_structured_parsing_enabled():
             raise ValueError("Structured parsing feature is disabled")
+        
+        # Log parsing request
+        print(f"\n[StructuredParser] Parsing document: {filename}")
+        print(f"[StructuredParser] Output format: {output_format}")
+        print(f"[StructuredParser] Options: {options}")
         
         # Validate output format
         supported_formats = self.config.get("structured_parsing", {}).get(
@@ -297,9 +325,13 @@ class StructuredDocumentParser:
             tmp.write(content)
             tmp_path = tmp.name
         
+        print(f"[StructuredParser] Temporary file created: {tmp_path}")
+        
         try:
             # Convert document
+            print(f"[StructuredParser] Starting document conversion...")
             result = converter.convert(tmp_path)
+            print(f"[StructuredParser] Document conversion complete")
             
             # Extract structured content based on format
             if output_format == "markdown":
@@ -312,6 +344,9 @@ class StructuredDocumentParser:
                 formatted_content = result.document.export_to_text()
             else:
                 formatted_content = result.document.export_to_markdown()
+            
+            print(f"[StructuredParser] Content exported to {output_format}")
+            print(f"[StructuredParser] Content length: {len(str(formatted_content))}")
             
             # Extract metadata
             metadata = {
@@ -330,6 +365,9 @@ class StructuredDocumentParser:
             }
             
         except Exception as e:
+            print(f"[StructuredParser] Error during parsing: {e}")
+            import traceback
+            traceback.print_exc()
             return {
                 "success": False,
                 "error": f"Failed to parse document: {str(e)}",
@@ -340,6 +378,7 @@ class StructuredDocumentParser:
             try:
                 if os.path.exists(tmp_path):
                     os.unlink(tmp_path)
+                    print(f"[StructuredParser] Cleaned up temporary file")
             except Exception:
                 pass
 

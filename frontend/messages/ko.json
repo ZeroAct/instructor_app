@@ -100,6 +100,7 @@
     "extractListDesc": "스키마와 일치하는 여러 항목 추출",
     "showFileUpload": "파일 업로드",
     "hideFileUpload": "파일 업로드 숨기기",
+    "uploadButton": "파일 업로드",
     "previous": "이전",
     "runExtraction": "추출 실행",
     "running": "실행 중..."
