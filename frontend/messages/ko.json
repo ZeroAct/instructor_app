@@ -110,7 +110,18 @@
     "supportedFormats": "지원: PDF, Word, Excel, 이미지, 텍스트 파일 등",
     "uploading": "업로드 중...",
     "uploadSuccess": "파일이 성공적으로 업로드되었습니다",
-    "uploadError": "파일 업로드 실패"
+    "uploadError": "파일 업로드 실패",
+    "uploadButton": "파일 업로드",
+    "uploadMode": "업로드 모드",
+    "simpleMode": "간단",
+    "structuredMode": "구조화",
+    "outputFormat": "출력 형식",
+    "enableOcr": "OCR 활성화",
+    "extractTables": "표 추출",
+    "preserveHierarchy": "계층 구조 유지",
+    "showPreview": "삽입 전 미리보기 표시",
+    "preview": "미리보기",
+    "useText": "이 텍스트 사용"
   },
   "resultsStep": {
     "title": "추출 결과",

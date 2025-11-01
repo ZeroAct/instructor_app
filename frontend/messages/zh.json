@@ -110,7 +110,18 @@
     "supportedFormats": "支持：PDF、Word、Excel、图像、文本文件等",
     "uploading": "上传中...",
     "uploadSuccess": "文件上传成功",
-    "uploadError": "文件上传失败"
+    "uploadError": "文件上传失败",
+    "uploadButton": "上传文件",
+    "uploadMode": "上传模式",
+    "simpleMode": "简单",
+    "structuredMode": "结构化",
+    "outputFormat": "输出格式",
+    "enableOcr": "启用 OCR",
+    "extractTables": "提取表格",
+    "preserveHierarchy": "保留层次结构",
+    "showPreview": "插入前显示预览",
+    "preview": "预览",
+    "useText": "使用此文本"
   },
   "resultsStep": {
     "title": "提取结果",

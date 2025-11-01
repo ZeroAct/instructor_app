@@ -110,7 +110,18 @@
     "supportedFormats": "Supports: PDF, Word, Excel, Images, Text files, and more",
     "uploading": "Uploading...",
     "uploadSuccess": "File uploaded successfully",
-    "uploadError": "Failed to upload file"
+    "uploadError": "Failed to upload file",
+    "uploadButton": "Upload File",
+    "uploadMode": "Upload Mode",
+    "simpleMode": "Simple",
+    "structuredMode": "Structured",
+    "outputFormat": "Output Format",
+    "enableOcr": "Enable OCR",
+    "extractTables": "Extract Tables",
+    "preserveHierarchy": "Preserve Hierarchy",
+    "showPreview": "Show preview before inserting",
+    "preview": "Preview",
+    "useText": "Use This Text"
   },
   "resultsStep": {
     "title": "Extraction Results",
