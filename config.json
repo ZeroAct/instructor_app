@@ -26,8 +26,8 @@
     },
     "paddleocr": {
       "use_angle_cls": true,
-      "lang": "en",
-      "show_log": false,
+      "lang": "en,korean",
+      "show_log": true,
       "det_model_dir": null,
       "rec_model_dir": null,
       "cls_model_dir": null,

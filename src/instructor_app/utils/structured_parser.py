@@ -169,7 +169,19 @@ class StructuredDocumentParser:
                 from docling.document_converter import DocumentConverter
                 from docling.datamodel.base_models import InputFormat
                 from docling.datamodel.pipeline_options import PdfPipelineOptions, OcrOptions
-                from docling.backend.pypdfium2_backend import PyPdfiumDocumentBackend
+                # Backend import can vary across docling versions; try best-effort
+                PyPdfiumDocumentBackend = None
+                try:
+                    from docling.backend.pypdfium2_backend import PyPdfiumDocumentBackend as _PdfiumBackend
+                    PyPdfiumDocumentBackend = _PdfiumBackend
+                except Exception:
+                    try:
+                        # Older or alternative path
+                        from docling.backend.pdf_backend import PyPdfiumDocumentBackend as _PdfiumBackend  # type: ignore
+                        PyPdfiumDocumentBackend = _PdfiumBackend
+                    except Exception:
+                        # If we can't import a backend explicitly, we'll rely on docling defaults
+                        PyPdfiumDocumentBackend = None
                 
                 docling_config = self.config.get("structured_parsing", {}).get("docling", {})
                 pipeline_opts = docling_config.get("pipeline_options", {})
@@ -208,18 +220,35 @@ class StructuredDocumentParser:
                         print(f"Warning: PaddleOCR integration failed, using default OCR: {e}")
                 
                 pipeline_options = PdfPipelineOptions(**pipeline_kwargs)
-                
-                self._docling_converter = DocumentConverter(
-                    allowed_formats=[
+
+                # Build kwargs for DocumentConverter, guarding against API differences
+                import inspect as _inspect
+                dc_sig_params = set(_inspect.signature(DocumentConverter.__init__).parameters.keys())
+
+                dc_kwargs = {}
+
+                # allowed_formats
+                if 'allowed_formats' in dc_sig_params:
+                    dc_kwargs['allowed_formats'] = [
                         InputFormat.PDF,
                         InputFormat.IMAGE,
                         InputFormat.DOCX,
                         InputFormat.HTML,
                         InputFormat.PPTX,
-                    ],
-                    pdf_backend=PyPdfiumDocumentBackend,
-                    pipeline_options=pipeline_options,
-                )
+                    ]
+
+                # pipeline_options
+                if 'pipeline_options' in dc_sig_params:
+                    dc_kwargs['pipeline_options'] = pipeline_options
+
+                # Backend parameter name varies by version; add only if backend import succeeded
+                if PyPdfiumDocumentBackend is not None:
+                    for candidate in ('pdf_backend', 'document_backend', 'backend', 'pdf_backend_class'):
+                        if candidate in dc_sig_params:
+                            dc_kwargs[candidate] = PyPdfiumDocumentBackend
+                            break
+
+                self._docling_converter = DocumentConverter(**dc_kwargs)
             except Exception as e:
                 raise ImportError(f"Failed to initialize Docling: {str(e)}")
         
