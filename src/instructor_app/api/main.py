@@ -366,7 +366,7 @@ async def upload_file_structured(
         return {
             "success": True,
             "filename": file.filename,
-            "content": result.get("content"),
+            "text": result.get("content"),
             "metadata": result.get("metadata"),
             "format": result.get("format"),
             "size": len(content),
