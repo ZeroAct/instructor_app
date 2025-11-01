@@ -10,7 +10,12 @@ Web application for [Instructor](https://github.com/567-labs/instructor) - struc
 - 🎯 **Dynamic Schema Definition**: Create and validate Pydantic schemas on the fly
 - 🌊 **Streaming Support**: Real-time streaming output from LLM responses
 - 📤 **Export Functionality**: Export results in JSON or Markdown format
-- 📁 **File Upload & OCR**: Upload documents (PDF, Word, Excel, Images) with automatic text extraction using PaddleOCR
+- 📁 **File Upload & OCR**: Upload documents with automatic text extraction
+- 📊 **Structured Document Parsing**: Advanced document understanding with Docling
+  - Preserve table structures
+  - Maintain document hierarchy
+  - Multiple output formats (Markdown, JSON, HTML)
+  - PaddleOCR integration for superior OCR performance
 - 🔌 **REST API**: Full-featured REST API for programmatic access
 - 🤖 (Comming Soon) **MCP Support**: Model Context Protocol server for tool integration
 - 🐳 **Docker Support**: Easy deployment with Docker and docker-compose
@@ -43,8 +48,14 @@ See [DOCKER.md](DOCKER.md) for detailed Docker instructions.
 # Install dependencies
 uv pip install -e .
 
-# Optional: Install file upload dependencies for OCR and document parsing
+# Optional: Install file upload dependencies
 uv pip install -e ".[file-upload]"
+
+# Optional: Install structured parsing dependencies (includes Docling)
+uv pip install -e ".[structured-parsing]"
+
+# Install all optional dependencies
+uv pip install -e ".[all]"
 
 # Run the web server
 python main.py
@@ -178,10 +189,10 @@ curl -X POST http://localhost:8000/api/export \
   }'
 ```
 
-#### Upload File for Text Extraction
+#### Upload File for Text Extraction (Simple)
 
 ```bash
-# Upload a document and extract text
+# Upload a document and extract plain text
 curl -X POST http://localhost:8000/api/file/upload \
   -F "file=@document.pdf"
 
@@ -189,9 +200,36 @@ curl -X POST http://localhost:8000/api/file/upload \
 curl http://localhost:8000/api/file/config
 ```
 
-The file upload feature supports:
+#### Upload File for Structured Parsing (Advanced)
+
+```bash
+# Upload document with structure preservation (tables, hierarchy)
+curl -X POST "http://localhost:8000/api/file/upload-structured?output_format=markdown" \
+  -F "file=@document.pdf"
+
+# With custom parameters
+curl -X POST "http://localhost:8000/api/file/upload-structured?output_format=json&do_ocr=true&extract_tables=true" \
+  -F "file=@document.pdf"
+
+# Get structured parsing configuration
+curl http://localhost:8000/api/file/structured-config
+```
+
+**Supported output formats**:
+- `markdown` - Markdown with preserved tables (default)
+- `json` - Structured JSON with hierarchy
+- `html` - HTML with semantic structure
+- `text` - Plain text
+
+**Query parameters**:
+- `output_format`: Output format (markdown, json, html, text)
+- `do_ocr`: Enable OCR for scanned documents (boolean)
+- `extract_tables`: Extract tables with structure (boolean)
+- `preserve_hierarchy`: Maintain document hierarchy (boolean)
+
+The file upload features support:
 - **Images**: JPG, PNG, BMP, GIF, TIFF (with OCR via PaddleOCR)
-- **Documents**: PDF, DOC, DOCX
+- **Documents**: PDF, DOC, DOCX (structured parsing preserves tables and hierarchy)
 - **Spreadsheets**: XLS, XLSX, CSV
 - **Text files**: TXT, JSON, XML, HTML, Markdown, RTF
 

@@ -13,6 +13,10 @@ from instructor_app.schemas.dynamic import DynamicSchemaBuilder
 from instructor_app.utils.export import ExportFormatter
 from instructor_app.utils.instructor_client import InstructorClient
 from instructor_app.utils.file_parser import get_file_parser, is_file_upload_enabled
+from instructor_app.utils.structured_parser import (
+    get_structured_parser,
+    is_structured_parsing_enabled
+)
 
 
 class SchemaRequest(BaseModel):
@@ -302,6 +306,131 @@ async def get_file_config():
         return {
             "enabled": True,
             "message": "File upload enabled but configuration could not be loaded"
+        }
+
+
+@app.post("/api/file/upload-structured")
+async def upload_file_structured(
+    file: UploadFile = File(...),
+    output_format: str = "markdown",
+    do_ocr: bool = None,
+    extract_tables: bool = None,
+    preserve_hierarchy: bool = None,
+):
+    """
+    Upload and parse a file with structure preservation (tables, hierarchy).
+    
+    This endpoint uses Docling with PaddleOCR for advanced document understanding.
+    Supports multiple output formats and preserves document structure.
+    
+    Query Parameters:
+        output_format: Output format (markdown, json, html, text). Default: markdown
+        do_ocr: Enable OCR for scanned documents. Default: from config
+        extract_tables: Extract tables with structure. Default: from config  
+        preserve_hierarchy: Maintain document hierarchy. Default: from config
+    
+    Returns:
+        Structured document with preserved tables and hierarchy
+    """
+    if not is_structured_parsing_enabled():
+        raise HTTPException(
+            status_code=403,
+            detail="Structured parsing feature is disabled. Set ENABLE_STRUCTURED_PARSING=true to enable."
+        )
+    
+    try:
+        # Read file content
+        content = await file.read()
+        
+        # Build options from query parameters
+        options = {}
+        if do_ocr is not None:
+            options['do_ocr'] = do_ocr
+        if extract_tables is not None:
+            options['extract_tables'] = extract_tables
+        if preserve_hierarchy is not None:
+            options['preserve_hierarchy'] = preserve_hierarchy
+        
+        # Parse file with structure
+        parser = get_structured_parser()
+        result = parser.parse_document(
+            content, 
+            file.filename or "unknown",
+            output_format=output_format,
+            **options
+        )
+        
+        if not result.get("success"):
+            raise HTTPException(status_code=500, detail=result.get("error", "Unknown error"))
+        
+        return {
+            "success": True,
+            "filename": file.filename,
+            "content": result.get("content"),
+            "metadata": result.get("metadata"),
+            "format": result.get("format"),
+            "size": len(content),
+        }
+        
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except ImportError as e:
+        raise HTTPException(
+            status_code=503,
+            detail=f"Required library not available: {str(e)}"
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Document parsing error: {str(e)}")
+
+
+@app.get("/api/file/structured-config")
+async def get_structured_config():
+    """Get structured parsing configuration and capabilities."""
+    if not is_structured_parsing_enabled():
+        return {
+            "enabled": False,
+            "message": "Structured parsing feature is disabled"
+        }
+    
+    try:
+        parser = get_structured_parser()
+        
+        # Check library availability
+        docling_available = False
+        paddleocr_available = False
+        
+        try:
+            import docling  # noqa
+            docling_available = True
+        except ImportError:
+            pass
+        
+        try:
+            from paddleocr import PaddleOCR  # noqa
+            paddleocr_available = True
+        except ImportError:
+            pass
+        
+        return {
+            "enabled": True,
+            "supported_formats": parser.get_supported_formats(),
+            "default_format": parser.config.get("structured_parsing", {}).get("default_format", "markdown"),
+            "capabilities": {
+                "table_extraction": True,
+                "hierarchy_preservation": True,
+                "ocr_support": True,
+            },
+            "libraries": {
+                "docling": docling_available,
+                "paddleocr": paddleocr_available,
+            },
+            "config_params": parser.get_config_params(),
+        }
+    except Exception as e:
+        return {
+            "enabled": True,
+            "error": "Configuration could not be loaded",
+            "message": str(e)
         }
 
 

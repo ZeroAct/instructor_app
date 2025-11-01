@@ -7,28 +7,31 @@
       ".csv", ".xlsx", ".xls", ".json", ".xml", ".html", ".md", ".rtf"
     ]
   },
-  "ocr": {
-    "backend": "paddleocr",
+  "structured_parsing": {
+    "enabled": true,
+    "backend": "docling",
+    "output_formats": ["markdown", "json", "html", "text"],
+    "default_format": "markdown",
+    "docling": {
+      "do_ocr": true,
+      "ocr_engine": "paddleocr",
+      "extract_tables": true,
+      "preserve_hierarchy": true,
+      "table_structure_recognition": true,
+      "pipeline_options": {
+        "do_table_structure": true,
+        "table_structure_model": null,
+        "do_code_enrichment": false
+      }
+    },
     "paddleocr": {
       "use_angle_cls": true,
       "lang": "en",
-      "use_gpu": false,
       "show_log": false,
       "det_model_dir": null,
       "rec_model_dir": null,
       "cls_model_dir": null,
-      "_comment": "Note: use_gpu parameter may not be available in PaddleOCR 3.3.1+. The parser automatically filters invalid parameters."
-    },
-    "fallback_to_text": true,
-    "image_extensions": [".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tiff", ".webp"]
-  },
-  "text_extraction": {
-    "encoding": "utf-8",
-    "fallback_encodings": ["latin-1", "cp1252", "iso-8859-1"]
-  },
-  "pdf_processing": {
-    "extract_images": true,
-    "ocr_images": true,
-    "use_layout_analysis": false
+      "_comment": "PaddleOCR settings for OCR within Docling. Parameters validated dynamically for version compatibility."
+    }
   }
 }
