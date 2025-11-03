@@ -41,48 +41,70 @@ export default function FileUpload({ onFileUploaded, disabled = false }: FileUpl
     setError(null);
     
     try {
-      const formData = new FormData();
-      formData.append('file', file);
+      // Step 1: Upload file
+      const uploadFormData = new FormData();
+      uploadFormData.append('file', file);
 
-      let url = `${API_BASE_URL}/api/file/parse`;
-      const params = new URLSearchParams();
-      
-      if (uploadMode === 'structured') {
-        params.append('do_ocr', doOcr.toString());
-        params.append('extract_tables', extractTables.toString());
-        params.append('preserve_hierarchy', preserveHierarchy.toString());
-      }
-      
-      if (params.toString()) {
-        url += `?${params}`;
-      }
-
-      const response = await fetch(url, {
+      const uploadResponse = await fetch(`${API_BASE_URL}/api/file/upload`, {
         method: 'POST',
-        body: formData,
+        body: uploadFormData,
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
+      if (!uploadResponse.ok) {
+        const errorData = await uploadResponse.json();
         throw new Error(errorData.detail || 'Failed to upload file');
       }
 
-      const data = await response.json();
+      const uploadData = await uploadResponse.json();
+      const fileId = uploadData.file_id;
+      const filename = uploadData.filename;
+
+      // Step 2: Parse file (simple or structured)
+      let parseUrl = `${API_BASE_URL}/api/file/parse${uploadMode === 'structured' ? '-structured' : ''}/${fileId}`;
       
-      if (data.success && data.formats) {
-        // Store parsed document
-        setParsedDoc({
-          doc_id: data.doc_id,
-          filename: data.filename,
-          formats: data.formats,
-          metadata: data.metadata,
+      if (uploadMode === 'structured') {
+        const params = new URLSearchParams({
+          do_ocr: doOcr.toString(),
+          extract_tables: extractTables.toString(),
+          preserve_hierarchy: preserveHierarchy.toString(),
         });
-        
-        // Auto-insert the default format immediately (no preview step)
-        const defaultText = data.formats[outputFormat] || data.formats.text || '';
-        onFileUploaded(defaultText, data.filename);
+        parseUrl += `?${params}`;
+      }
+
+      const parseResponse = await fetch(parseUrl, {
+        method: 'POST',
+      });
+
+      if (!parseResponse.ok) {
+        const errorData = await parseResponse.json();
+        throw new Error(errorData.detail || 'Failed to parse file');
+      }
+
+      const parseData = await parseResponse.json();
+      
+      if (uploadMode === 'simple') {
+        // Simple mode: just text
+        if (parseData.success && parseData.text) {
+          onFileUploaded(parseData.text, filename);
+        } else {
+          throw new Error('Invalid response from server');
+        }
       } else {
-        throw new Error('Invalid response from server');
+        // Structured mode: multiple formats
+        if (parseData.success && parseData.formats) {
+          // Store parsed document
+          setParsedDoc({
+            doc_id: fileId,
+            filename: filename,
+            formats: parseData.formats,
+          });
+          
+          // Auto-insert the default format immediately
+          const defaultText = parseData.formats[outputFormat] || parseData.formats.text || '';
+          onFileUploaded(defaultText, filename);
+        } else {
+          throw new Error('Invalid response from server');
+        }
       }
     } catch (err: any) {
       setError(err.message || 'Failed to upload file');
@@ -124,10 +146,10 @@ export default function FileUpload({ onFileUploaded, disabled = false }: FileUpl
       return;
     }
     
-    // Fetch format from server
+    // Fetch format from server using export endpoint
     try {
       const response = await fetch(
-        `${API_BASE_URL}/api/file/export/${parsedDoc.doc_id}?output_format=${format}`
+        `${API_BASE_URL}/api/file/export/${parsedDoc.doc_id}?format=${format}`
       );
       
       if (!response.ok) {
@@ -141,7 +163,7 @@ export default function FileUpload({ onFileUploaded, disabled = false }: FileUpl
         ...parsedDoc,
         formats: {
           ...parsedDoc.formats,
-          [format]: data.text,
+          [format]: data.content,
         },
       });
       setOutputFormat(format);
