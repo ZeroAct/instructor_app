@@ -4,8 +4,6 @@ import { useState, useCallback, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { Settings } from 'lucide-react';
 import { API_BASE_URL } from '@/lib/api';
-import DocumentViewer from './DocumentViewer';
-import FloatingOptions from './FloatingOptions';
 
 type UploadMode = 'simple' | 'structured';
 type OutputFormat = 'markdown' | 'json' | 'html' | 'text';
