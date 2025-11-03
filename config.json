@@ -7,6 +7,11 @@
       ".csv", ".xlsx", ".xls", ".json", ".xml", ".html", ".md", ".rtf"
     ]
   },
+  "file_storage": {
+    "temp_dir": "/tmp/instructor_uploads",
+    "ttl_seconds": 600,
+    "_comment": "Temporary file storage settings. TTL=600 means files expire after 10 minutes."
+  },
   "structured_parsing": {
     "enabled": true,
     "backend": "docling",
