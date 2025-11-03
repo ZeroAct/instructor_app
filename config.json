@@ -1,0 +1,42 @@
+{
+  "file_upload": {
+    "enabled": true,
+    "max_file_size_mb": 10,
+    "allowed_extensions": [
+      ".txt", ".pdf", ".doc", ".docx", ".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tiff",
+      ".csv", ".xlsx", ".xls", ".json", ".xml", ".html", ".md", ".rtf"
+    ]
+  },
+  "file_storage": {
+    "temp_dir": "/tmp/instructor_uploads",
+    "ttl_seconds": 600,
+    "_comment": "Temporary file storage settings. TTL=600 means files expire after 10 minutes."
+  },
+  "structured_parsing": {
+    "enabled": true,
+    "backend": "docling",
+    "output_formats": ["markdown", "json", "html", "text"],
+    "default_format": "markdown",
+    "docling": {
+      "do_ocr": true,
+      "ocr_engine": "paddleocr",
+      "extract_tables": true,
+      "preserve_hierarchy": true,
+      "table_structure_recognition": true,
+      "pipeline_options": {
+        "do_table_structure": true,
+        "table_structure_model": null,
+        "do_code_enrichment": false
+      }
+    },
+    "paddleocr": {
+      "use_angle_cls": true,
+      "lang": "en,korean",
+      "show_log": true,
+      "det_model_dir": null,
+      "rec_model_dir": null,
+      "cls_model_dir": null,
+      "_comment": "PaddleOCR settings for OCR within Docling. Parameters validated dynamically for version compatibility."
+    }
+  }
+}
