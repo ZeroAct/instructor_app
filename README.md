@@ -1,6 +1,4 @@
 # Instructor App
-[Sample Page](http://52.79.210.112/ko)
-
 Web application for [Instructor](https://github.com/567-labs/instructor) - structured outputs from LLMs with dynamic schemas.
 
 ![Instructor App UI](./instructor_app.png)
